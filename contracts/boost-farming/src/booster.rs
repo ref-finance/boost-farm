@@ -67,8 +67,12 @@ impl Contract {
                 .unwrap_or(0_u128);
             if booster_balance > 0 && log_base > &0 {
                 let booster_base = 10u128.pow(*booster_decimal);
-                let ratio =
-                    ((booster_balance as f64) / (booster_base as f64)).log(*log_base as f64);
+                let booster_amount = booster_balance as f64 / booster_base as f64;
+                let ratio = if booster_amount > 1f64 {
+                    booster_amount.log(*log_base as f64)
+                } else {
+                    0f64
+                };
                 ratios.insert(booster.clone(), ratio);
             }
         }
