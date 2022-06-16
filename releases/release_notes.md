@@ -1,5 +1,8 @@
 # Release Notes
 
+Version 0.2.1
+1. Update booster ratio algorithm.
+
 Version 0.2.0
 1. enable pour farmers and seeds before running.
 
