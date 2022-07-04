@@ -9,6 +9,9 @@ build: contracts/boost-farming
 test: build mock-ft mock-mft
 	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming
 
+rs-sandbox: build mock-ft mock-mft sandbox-rs
+	RUSTFLAGS=$(RFLAGS) cargo run -p sandbox-rs --example sand_owner
+
 release:
 	$(call docker_build,_rust_setup.sh)
 	mkdir -p res
