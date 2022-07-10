@@ -51,7 +51,7 @@ impl StorageManagement for Contract {
     fn storage_withdraw(&mut self, amount: Option<U128>) -> StorageBalance {
         assert_one_yocto();
         require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
-        env::panic_str(E101_INSUFFICIENT_BALANCE);
+        env::panic_str(E006_NOT_IMPLEMENTED);
     }
 
     #[allow(unused_variables)]

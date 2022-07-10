@@ -77,34 +77,4 @@ impl Env {
             deposit,
         )
     }
-
-    pub fn pour_farmers(
-        &self, 
-        operator: &UserAccount,
-        farmers: Vec<ImportFarmerInfo>
-    ) -> ExecutionResult {
-        operator
-            .function_call(
-                self.farming_contract.contract.pour_farmers(
-                    farmers,
-                ),
-                MAX_GAS.0,
-                1,
-            )
-    }
-
-    pub fn pour_seeds(
-        &self, 
-        operator: &UserAccount,
-        seeds: Vec<ImportSeedInfo>
-    ) -> ExecutionResult {
-        operator
-            .function_call(
-                self.farming_contract.contract.pour_seeds(
-                    seeds,
-                ),
-                MAX_GAS.0,
-                1,
-            )
-    }
 }

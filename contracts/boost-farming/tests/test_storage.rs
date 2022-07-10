@@ -47,7 +47,7 @@ fn test_storage(){
     // 2 : storage_withdraw with E101_INSUFFICIENT_BALANCE
     assert_err!(
         e.storage_withdraw(&users.alice, 1),
-        E101_INSUFFICIENT_BALANCE
+        E006_NOT_IMPLEMENTED
     );
 
     // 3 : storage_unregister with storage_withdraw with Requires attached deposit of exactly 1 yoctoNEAR

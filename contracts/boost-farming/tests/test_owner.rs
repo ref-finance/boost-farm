@@ -1,8 +1,5 @@
 mod setup;
 use crate::setup::*;
-use std::collections::HashMap;
-use near_sdk::AccountId;
-use near_sdk::json_types::U128;
 
 
 #[test]
@@ -103,66 +100,4 @@ fn test_operators(){
     assert_eq!(e.get_metadata().operators, vec![users.bob.account_id()]);
     e.remove_operators(&users.alice, vec![&users.bob], 1).assert_success();
     assert_eq!(e.get_metadata().operators, vec![]);
-}
-
-#[test]
-fn test_pour() {
-    let e = init_env();
-    let users = Users::init(&e);
-    e.pause_contract(&e.owner, 1).assert_success();
-
-    let prev_storage = e.get_contract_storage_report().storage.0;
-
-    let mut rewards = HashMap::new();
-    let mut seeds = HashMap::new();
-    rewards.insert(AccountId::new_unchecked("token01".to_string()), U128(1));
-    seeds.insert("seed01".to_string(), U128(1));
-    seeds.insert("seed02".to_string(), U128(1));
-
-    let a = ImportFarmerInfo {
-        farmer_id: AccountId::new_unchecked("farmer01.near".to_string()),
-        rewards: rewards.clone(),
-        seeds: seeds.clone(),
-    };
-    let b = ImportFarmerInfo {
-        farmer_id: AccountId::new_unchecked("farmer02.near".to_string()),
-        rewards: HashMap::new(),
-        seeds: HashMap::new(),
-    };
-
-    e.pour_farmers(&e.owner, vec![a, b]).assert_success();
-    assert_eq!(e.get_metadata().farmer_count.0, 2);
-
-    println!("storage increase: {} bytes", e.get_contract_storage_report().storage.0 - prev_storage);
-
-    let seed_info_01 = ImportSeedInfo {
-        seed_id: "seed01".to_string(),
-        seed_decimal: 24,
-        amount: U128(1),
-        min_deposit: U128(1000000),
-    };
-    let seed_info_02 = ImportSeedInfo {
-        seed_id: "seed02".to_string(),
-        seed_decimal: 24,
-        amount: U128(1),
-        min_deposit: U128(1000000),
-    };
-    e.pour_seeds(&e.owner, vec![seed_info_01, seed_info_02]).assert_success();
-    assert_eq!(e.get_metadata().seed_count.0, 2);
-
-
-    e.resume_contract(&e.owner, 1).assert_success();
-
-
-    assert_err!(
-        e.pour_farmers(&e.owner, vec![ImportFarmerInfo {
-            farmer_id: AccountId::new_unchecked("farmer03.near".to_string()),
-            rewards: HashMap::new(),
-            seeds: HashMap::new(),
-        }]),
-        E005_NOT_ALLOWED_ON_CUR_STATE
-    );
-
-    // RUSTFLAGS="-C link-arg=-s" cargo test -p boost-farming test_pour -- --nocapture
-
 }
