@@ -1,4 +1,4 @@
-
+use std::collections::HashMap;
 use serde_json::json;
 use serde::{Deserialize, Serialize};
 use workspaces::AccountId;
@@ -33,5 +33,5 @@ pub struct ImportSeedInfo {
 pub struct ImportFarmerInfo {
     pub farmer_id: AccountId,
     pub rewards: HashMap<AccountId, String>,
-    pub seeds: HashMap<SeedId, String>,
+    pub seeds: HashMap<String, String>,
 }

@@ -9,7 +9,7 @@ mod common;
 
 const BOOST_FILEPATH: &str = "./res/boost_farming.wasm";
 const FT_FILEPATH: &str = "./res/mock_ft.wasm";
-const NFT_FILEPATH: &str = "./res/mock_mft.wasm";
+const MFT_FILEPATH: &str = "./res/mock_mft.wasm";
 
 
 #[tokio::main]
@@ -17,10 +17,10 @@ async fn main() -> anyhow::Result<()> {
     let worker = workspaces::sandbox().await?;
     let boost_wasm = std::fs::read(BOOST_FILEPATH)?;
     let ft_wasm = std::fs::read(FT_FILEPATH)?;
-    let nft_wasm = std::fs::read(NFT_FILEPATH)?;
+    let mft_wasm = std::fs::read(MFT_FILEPATH)?;
     let boost = worker.dev_deploy(&boost_wasm).await?;
     let ft = worker.dev_deploy(&ft_wasm).await?;
-    let nft = worker.dev_deploy(&nft_wasm).await?;
+    let mft = worker.dev_deploy(&mft_wasm).await?;
 
     let owner = worker.root_account();
     
