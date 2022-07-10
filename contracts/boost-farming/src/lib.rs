@@ -165,7 +165,7 @@ impl Contract {
         Self {
             data: VersionedContractData::V0101(ContractData {
                 owner_id: owner_id.into(),
-                state: RunningState::Paused,
+                state: RunningState::Running,
                 operators: UnorderedSet::new(StorageKeys::Operator),
                 config: LazyOption::new(StorageKeys::Config, Some(&Config::default())),
                 seeds: UnorderedMap::new(StorageKeys::Seed),

@@ -1,5 +1,10 @@
 # Release Notes
 
+Version 0.2.2
+1. Upgrade near-sdk to 4.0.0-pre.9.
+2. remove pour_xxx interfaces.
+3. correct error msg in storage_withdraw.
+
 Version 0.2.1
 1. Update booster ratio algorithm.
 

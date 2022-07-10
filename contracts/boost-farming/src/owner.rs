@@ -83,69 +83,6 @@ impl Contract {
         }
     }
 
-     /// pour seeds before contract actually running
-     #[payable]
-     pub fn pour_seeds(&mut self, seeds: Vec<ImportSeedInfo>) {
-        assert_one_yocto();
-        self.assert_owner();
-        require!(self.data().state == RunningState::Paused, E005_NOT_ALLOWED_ON_CUR_STATE);
-
-        let default_slash_rate = self.internal_config().seed_slash_rate;
-        let min_locking_duration_sec = DEFAULT_SEED_MIN_LOCKING_DURATION_SEC;
-
-         for seed_info in seeds {
-            let mut seed = Seed::new(
-                &seed_info.seed_id, 
-                seed_info.seed_decimal, 
-                seed_info.min_deposit.into(), 
-                default_slash_rate, 
-                min_locking_duration_sec
-            );
-            seed.total_seed_amount = seed_info.amount.into();
-            seed.total_seed_power = seed_info.amount.into();
-
-            self.data_mut().seeds.insert(&seed_info.seed_id, &seed.into());
-         }
-     }
-
-    /// pour farmers before contract actually running
-    #[payable]
-    pub fn pour_farmers(&mut self, farmers: Vec<ImportFarmerInfo>) {
-        assert_one_yocto();
-        self.assert_owner();
-        require!(self.data().state == RunningState::Paused, E005_NOT_ALLOWED_ON_CUR_STATE);
-
-        let sponsor_id = self.data().owner_id.clone();
-        let farmer_count = farmers.len() as u64;
-
-        for farmer_info in farmers {
-            let mut farmer = Farmer::new(&farmer_info.farmer_id, &sponsor_id);
-
-            let rewards: HashMap<AccountId, Balance> = farmer_info.rewards
-            .into_iter()
-            .map(|(k, v)| (k, v.into()))
-            .collect();
-            farmer.add_rewards(&rewards);
-            
-            for (seed_id, amount) in farmer_info.seeds.iter() {
-                let amount: Balance = amount.0;
-                let fs = FarmerSeed {
-                    free_amount: amount,
-                    locked_amount: 0,
-                    x_locked_amount: 0,
-                    unlock_timestamp: 0,
-                    duration_sec: 0,
-                    boost_ratios: HashMap::new(),
-                    user_rps: HashMap::new(),
-                };
-                farmer.seeds.insert(seed_id, &fs);
-
-            }
-            self.data_mut().farmers.insert(&farmer_info.farmer_id, &farmer.into());
-        }
-        self.data_mut().farmer_count += farmer_count;
-    }
-
     /// Should only be called by this contract on migration.
     /// This is NOOP implementation. KEEP IT if you haven't changed contract state.
     /// If you have, you need to implement migration from old state 

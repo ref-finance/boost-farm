@@ -1,6 +1,7 @@
 [workspace]
 members = [
-  "contracts/*"
+  "contracts/*",
+  "sandbox-rs"
 ]
 
 [profile.release]
