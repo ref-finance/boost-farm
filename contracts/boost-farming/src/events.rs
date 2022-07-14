@@ -83,6 +83,11 @@ pub enum Event<'a> {
         withdraw_amount: &'a U128,
         success: bool,
     },
+    RewardLostfound {
+        farmer_id: &'a AccountId,
+        token_id: &'a AccountId,
+        withdraw_amount: &'a U128,
+    },
 }
 
 impl Event<'_> {
@@ -225,6 +230,18 @@ mod tests {
         assert_eq!(
             test_utils::get_logs()[0],
             r#"EVENT_JSON:{"standard":"ref-farming","version":"1.0.0","event":"reward_withdraw","data":[{"farmer_id":"alice","token_id":"bob","withdraw_amount":"100","success":false}]}"#
+        );
+    }
+
+    #[test]
+    fn event_reward_lostfound() {
+        let farmer_id = &alice();
+        let token_id = &bob();
+        let withdraw_amount = &U128(100);
+        Event::RewardLostfound { farmer_id, token_id, withdraw_amount }.emit();
+        assert_eq!(
+            test_utils::get_logs()[0],
+            r#"EVENT_JSON:{"standard":"ref-farming","version":"1.0.0","event":"reward_lostfound","data":[{"farmer_id":"alice","token_id":"bob","withdraw_amount":"100"}]}"#
         );
     }
 

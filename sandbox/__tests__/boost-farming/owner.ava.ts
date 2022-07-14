@@ -8,7 +8,7 @@ workspace.test('set_owner', async (test, { farming, ft, mft, owner, alice, bob }
   test.log(md);
 
   test.deepEqual(md, {
-    version: '0.1.3',
+    version: '0.2.3',
     owner_id: 'ref_owner.test.near',
     operators: [],
     farmer_count: '0',

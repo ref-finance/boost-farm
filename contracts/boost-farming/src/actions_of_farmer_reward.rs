@@ -79,17 +79,26 @@ impl Contract {
             }
             PromiseResult::Failed => {
                 // This reverts the changes from withdraw function.
-                let mut farmer = self.internal_unwrap_farmer(&farmer_id);
-                farmer.add_rewards(&HashMap::from([(token_id.clone(), amount)]));
-                self.internal_set_farmer(&farmer_id, farmer);
-
-                Event::RewardWithdraw {
-                    farmer_id: &farmer_id,
-                    token_id: &token_id,
-                    withdraw_amount: &U128(amount),
-                    success: false,
+                if let Some(mut farmer) = self.internal_get_farmer(&farmer_id) {
+                    farmer.add_rewards(&HashMap::from([(token_id.clone(), amount)]));
+                    self.internal_set_farmer(&farmer_id, farmer);
+    
+                    Event::RewardWithdraw {
+                        farmer_id: &farmer_id,
+                        token_id: &token_id,
+                        withdraw_amount: &U128(amount),
+                        success: false,
+                    }
+                    .emit();
+                } else {
+                    Event::RewardLostfound {
+                        farmer_id: &farmer_id,
+                        token_id: &token_id,
+                        withdraw_amount: &U128(amount),
+                    }
+                    .emit();
                 }
-                .emit();
+                
             }
         }
     }
