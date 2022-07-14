@@ -1,5 +1,9 @@
 # Release Notes
 
+Version 0.2.3
+1. add lostfound logic in withdraw reward logic.
+2. improve upgrade process.
+
 Version 0.2.2
 1. Upgrade near-sdk to 4.0.0-pre.9.
 2. remove pour_xxx interfaces.
