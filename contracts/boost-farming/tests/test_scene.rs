@@ -1204,3 +1204,81 @@ fn test_booster_ratio(){
     e.ft_stake_free_seed(&users.farmer1, &tokens.love_ref, 1u128 * 10u128.pow(2)).assert_success();
     assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(9.643274665532871e-17));
 }
+
+
+#[test]
+fn test_reward_after_start_at(){
+    let e = init_env();
+    let users = Users::init(&e);
+    let tokens = Tokens::init(&e);
+
+    let inner_id = "0".to_string();
+    let token_id = format!(":{}", inner_id);
+    let seed_id = e.mft_seed_id(&inner_id);
+    let farm_id = format!("{}#{}", seed_id, 0);
+
+    println!("> create_seed at : {}", e.current_time());
+    e.create_seed(&e.owner, &seed_id, TOKEN_DECIMALS as u32, None, None).assert_success();
+    assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
+
+    println!("> farmer1 mint mft at : {}", e.current_time());
+    e.mft_mint(&inner_id, &users.farmer1, to_yocto("100"));
+    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
+
+    println!("> farmer1 register farming at : {}", e.current_time());
+    e.storage_deposit_self_to_farming(&users.farmer1).assert_success();
+    assert_eq!(e.get_metadata().farmer_count.0, 1);
+
+    println!("> farmer2 mint mft at : {}", e.current_time());
+    e.mft_mint(&inner_id, &users.farmer2, to_yocto("100"));
+    assert_eq!(e.mft_balance_of(&users.farmer2, &token_id), to_yocto("100"));
+
+    println!("> farmer2 register farming at : {}", e.current_time());
+    e.storage_deposit_self_to_farming(&users.farmer2).assert_success();
+    assert_eq!(e.get_metadata().farmer_count.0, 2);
+
+    println!("> farming register mft at : {}", e.current_time());
+    e.mft_storage_deposit(&token_id, &e.farming_contract.user_account);
+
+
+    let start_at = e.current_time();
+    println!("> create_farm at : {}", e.current_time());
+    e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at), to_yocto("10")).assert_success();
+
+    e.skip_time(to_sec(NANOS_PER_DAY));
+    println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
+    println!("> no famer stake, first day reward to beneficiary");
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Pending));
+
+    println!("> farmer1 mft_stake_free_seed at : {}", e.current_time());
+    e.mft_stake_free_seed(&users.farmer1, &token_id, to_yocto("100")).assert_success();
+
+    e.skip_time(to_sec(2 * NANOS_PER_DAY));
+    println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
+    assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
+
+    println!("> farmer2 mft_stake_free_seed at : {}", e.current_time());
+    e.mft_stake_free_seed(&users.farmer2, &token_id, to_yocto("100")).assert_success();
+
+    e.skip_time(to_sec(NANOS_PER_DAY));
+    println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Pending));
+    assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
+    assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), 0);
+
+    println!("> deposit_reward at : {}", e.current_time());
+    e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
+    assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
+    e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at + 4 * NANOS_PER_DAY, to_yocto("40"), 0, 0, Some(FarmStatus::Running));
+    assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("20"));
+    assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("20"));
+
+    e.skip_time(to_sec(20 * NANOS_PER_DAY));
+    println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at + 24 * NANOS_PER_DAY, to_yocto("100"), 0, 0, Some(FarmStatus::Ended));
+
+    e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
+    assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("50"));
+    assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("50"));
+}

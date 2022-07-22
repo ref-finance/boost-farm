@@ -93,6 +93,12 @@ fn test_operators(){
         E002_NOT_ALLOWED
     );
 
+    // 5 : remove with E007_INVALID_OPERATOR
+    assert_err!(
+        e.remove_operators(&e.owner, vec![&users.bob], 1),
+        E007_INVALID_OPERATOR
+    );
+
     // success
     assert_eq!(e.get_metadata().operators, vec![]);
     e.set_owner(&e.owner, &users.alice, 1).assert_success();

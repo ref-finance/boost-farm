@@ -1,5 +1,8 @@
 # Release Notes
 
+Version 0.2.4
+1. implement audit recommendation
+
 Version 0.2.3
 1. add lostfound logic in withdraw reward logic.
 2. improve upgrade process.

@@ -133,6 +133,12 @@ fn test_modify_default_slash_rate(){
         E002_NOT_ALLOWED
     );
 
+    // 3 : E205_INVALID_SLASH_RATE
+    assert_err!(
+        e.modify_default_slash_rate(&e.owner, 100000, 1),
+        E205_INVALID_SLASH_RATE
+    );
+
     e.extend_operators(&e.owner, vec![&users.bob], 1).assert_success();
 
     // success
