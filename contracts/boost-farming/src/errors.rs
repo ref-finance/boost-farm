@@ -6,6 +6,7 @@ pub const E003_NOT_INIT: &str = "E003: not initialized";
 pub const E004_CONTRACT_PAUSED: &str = "E004: contract paused";
 pub const E005_NOT_ALLOWED_ON_CUR_STATE: &str = "E005: not allowed on current state";
 pub const E006_NOT_IMPLEMENTED: &str = "E006: not implemented";
+pub const E007_INVALID_OPERATOR: &str = "E007: invalid operator";
 
 pub const E100_ACC_NOT_REGISTERED: &str = "E100: account not registered";
 pub const E101_INSUFFICIENT_BALANCE: &str = "E101: insufficient balance";
@@ -18,6 +19,7 @@ pub const E201_INVALID_DURATION: &str = "E201: invalid duration";
 pub const E202_FORBID_SELF_BOOST: &str = "E202: self boost is forbidden";
 pub const E203_EXCEED_FARM_NUM_IN_BOOST: &str = "E203: exceed max farm num in one boost";
 pub const E204_EXCEED_SEED_NUM_IN_BOOSTER: &str = "E204: exceed max seed num in one booster";
+pub const E205_INVALID_SLASH_RATE: &str = "E205: invalid ratio slash rate";
 
 pub const E300_FORBID_LOCKING: &str = "E300: locking on this seed is forbidden";
 pub const E301_SEED_NOT_EXIST: &str = "E301: seed not exist";

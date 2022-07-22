@@ -79,7 +79,8 @@ impl Contract {
         assert_one_yocto();
         self.assert_owner();
         for operator in operators {
-            self.data_mut().operators.remove(&operator);
+            let is_success = self.data_mut().operators.remove(&operator);
+            require!(is_success, E007_INVALID_OPERATOR);
         }
     }
 

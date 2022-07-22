@@ -51,6 +51,7 @@ impl Contract {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
         require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
+        require!(BP_DENOM > slash_rate as u128, E205_INVALID_SLASH_RATE);
         
         let mut config =  self.data().config.get().unwrap();
         config.seed_slash_rate = slash_rate;
