@@ -60,7 +60,7 @@ impl Contract {
         token_id: AccountId,
         farmer_id: AccountId,
         amount: U128,
-    ) {
+    ) -> bool {
         require!(
             env::promise_results_count() == 1,
             E001_PROMISE_RESULT_COUNT_INVALID
@@ -76,6 +76,7 @@ impl Contract {
                     success: true,
                 }
                 .emit();
+                true
             }
             PromiseResult::Failed => {
                 // This reverts the changes from withdraw function.
@@ -98,7 +99,7 @@ impl Contract {
                     }
                     .emit();
                 }
-                
+                false
             }
         }
     }
