@@ -99,7 +99,7 @@ fn test_normal_seed_single_farm(){
 
     println!("> farmer1 withdraw all seed at : {}, meanwhile claim all reward by seed", e.current_time());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("100")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("100")).unwrap_json::<bool>());
     assert!(e.get_farmer_seed(&users.farmer1, &seed_id).is_null());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
@@ -138,7 +138,7 @@ fn test_normal_seed_single_farm(){
         "The account farmer2.near is not registered"
     );
     e.ft_storage_deposit(&users.farmer2, &tokens.nref);
-    e.withdraw_reward(&users.farmer2, &tokens.nref, None).assert_success();
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.nref, None).unwrap_json::<bool>());
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.nref), 0);
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.farmer2), to_yocto("20"));
 
@@ -154,10 +154,10 @@ fn test_normal_seed_single_farm(){
     let free_amount = to_yocto("50") - seed_slashed;
     let free_amount_part = free_amount - to_yocto("10");
     assert_user_seed_info(e.get_farmer_seed(&users.farmer2, &seed_id), free_amount, 0, 0, 0, 0);
-    e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, to_yocto("10")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, to_yocto("10")).unwrap_json::<bool>());
     assert_user_seed_info(e.get_farmer_seed(&users.farmer2, &seed_id), free_amount_part, 0, 0, 0, 0);
     assert_eq!(e.mft_balance_of(&users.farmer2, &token_id), to_yocto("60"));
-    e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, free_amount_part).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, free_amount_part).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer2, &token_id), to_yocto("50") + free_amount);
     e.get_farmer_seed(&users.farmer2, &seed_id).is_null();
 
@@ -329,7 +329,7 @@ fn test_normal_mutli_farm(){
 
     println!("> farmer1 withdraw all seed at : {}", e.current_time());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("100")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("100")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, to_yocto("50"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 
@@ -370,7 +370,7 @@ fn test_normal_mutli_farm(){
     let seed_slashed = u128_ratio(full_slashed, (farmer2_unlock_time - e.current_time()) as u128, to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC) as u128);
     let free_amount = to_yocto("50") - seed_slashed;
     assert_user_seed_info(e.get_farmer_seed(&users.farmer2, &seed_id), free_amount, 0, 0, 0, 0);
-    e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, free_amount).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, free_amount).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer2, &token_id), to_yocto("50") + free_amount);
     e.get_farmer_seed(&users.farmer2, &seed_id).is_null();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, to_yocto("50"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
@@ -381,8 +381,8 @@ fn test_normal_mutli_farm(){
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.wnear), to_yocto("30"));
     e.ft_storage_deposit(&users.farmer2, &tokens.nref);
     e.ft_storage_deposit(&users.farmer2, &tokens.wnear);
-    e.withdraw_reward(&users.farmer2, &tokens.nref, None).assert_success();
-    e.withdraw_reward(&users.farmer2, &tokens.wnear, None).assert_success();
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.nref, None).unwrap_json::<bool>());
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.wnear, None).unwrap_json::<bool>());
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.nref), 0);
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.wnear), 0);
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.farmer2), to_yocto("60"));
@@ -401,7 +401,7 @@ fn test_normal_mutli_farm(){
 
     println!("> farmer1 unclock and withdraw all seed at : {}, meanwhile claim all reward by seed", e.current_time());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("50"));
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("50"), to_yocto("50")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("50"), to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Ended));
@@ -651,13 +651,13 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     println!("nomal> farmer1 withdraw all seed at : {}", e.current_time());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_normal), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_normal, 0, to_yocto("100")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_normal, 0, to_yocto("100")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_normal), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id_normal), &seed_id_normal, TOKEN_DECIMALS as u32, 2, to_yocto("50"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 
     println!("booster> farmer1 withdraw all seed at : {}", e.current_time());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_booster), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_booster, 0, to_yocto("100")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_booster, 0, to_yocto("100")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_booster), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, to_yocto("50"), 200000000000000004764729344, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 
@@ -720,7 +720,7 @@ fn test_mutli_seed_with_booster_and_normal(){
     let seed_slashed = u128_ratio(full_slashed, (farmer2_unlock_time - e.current_time()) as u128, to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC) as u128);
     let free_amount = to_yocto("50") - seed_slashed;
     assert_user_seed_info(e.get_farmer_seed(&users.farmer2, &seed_id_normal), free_amount, 0, 0, 0, 0);
-    e.unlock_and_withdraw_seed(&users.farmer2, &seed_id_normal, 0, free_amount).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &seed_id_normal, 0, free_amount).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer2, &token_id_normal), to_yocto("50") + free_amount);
     e.get_farmer_seed(&users.farmer2, &seed_id_normal).is_null();
     assert_seed(e.get_seed(&seed_id_normal), &seed_id_normal, TOKEN_DECIMALS as u32, 2, to_yocto("50"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
@@ -731,8 +731,8 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.wnear), to_yocto("30"));
     e.ft_storage_deposit(&users.farmer2, &tokens.nref);
     e.ft_storage_deposit(&users.farmer2, &tokens.wnear);
-    e.withdraw_reward(&users.farmer2, &tokens.nref, None).assert_success();
-    e.withdraw_reward(&users.farmer2, &tokens.wnear, None).assert_success();
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.nref, None).unwrap_json::<bool>());
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.wnear, None).unwrap_json::<bool>());
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.nref), 0);
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.wnear), 0);
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.farmer2), to_yocto("60"));
@@ -746,7 +746,7 @@ fn test_mutli_seed_with_booster_and_normal(){
     let seed_slashed = u128_ratio(full_slashed, (farmer2_unlock_time - e.current_time()) as u128, to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC) as u128);
     let free_amount = to_yocto("50") - seed_slashed;
     assert_user_seed_info(e.get_farmer_seed(&users.farmer2, &seed_id_booster), free_amount, 0, 0, 0, 0);
-    e.unlock_and_withdraw_seed(&users.farmer2, &seed_id_booster, 0, free_amount).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &seed_id_booster, 0, free_amount).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer2, &token_id_booster), to_yocto("50") + free_amount);
     e.get_farmer_seed(&users.farmer2, &seed_id_booster).is_null();
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, to_yocto("50"), 200000000000000004764729344, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
@@ -757,8 +757,8 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert!(e.get_farmer_reward(&users.farmer2, &tokens.ndai) <= to_yocto("30"));
     e.ft_storage_deposit(&users.farmer2, &tokens.neth);
     e.ft_storage_deposit(&users.farmer2, &tokens.ndai);
-    e.withdraw_reward(&users.farmer2, &tokens.neth, None).assert_success();
-    e.withdraw_reward(&users.farmer2, &tokens.ndai, None).assert_success();
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.neth, None).unwrap_json::<bool>());
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.ndai, None).unwrap_json::<bool>());
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.neth), 0);
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.ndai), 0);
     assert!(e.ft_balance_of(&tokens.neth, &users.farmer2) <= to_yocto("60"));
@@ -784,7 +784,7 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     println!("normal> farmer1 unclock and withdraw all seed at : {}, meanwhile claim all reward by seed", e.current_time());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_normal), to_yocto("50"));
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_normal, to_yocto("50"), to_yocto("50")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_normal, to_yocto("50"), to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_normal), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id_normal), &seed_id_normal, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Ended));
@@ -795,7 +795,7 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_booster), to_yocto("50"));
     farm_id_0_booster_reward_claim += e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth);
     farm_id_1_booster_reward_claim += e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.ndai);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_booster, to_yocto("50"), to_yocto("50")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_booster, to_yocto("50"), to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_booster), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("300"), farm_id_0_booster_reward_claim, 0, Some(FarmStatus::Ended));
@@ -851,7 +851,7 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), 0);
     println!("{}", e.get_farmer_seed(&users.farmer1, &booster_id));
     farm_id_0_booster_reward_claim += e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth);
-    e.unlock_and_withdraw_seed(&users.farmer1, &booster_id, 0, to_yocto("10")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &booster_id, 0, to_yocto("10")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), to_yocto("10"));
     assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], Value::Null);
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, to_yocto("150"), 200000000000000002382364672, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
@@ -860,11 +860,11 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer2), 0);
     println!("{}", e.get_farmer_seed(&users.farmer2, &booster_id));
     farm_id_0_booster_reward_claim += e.get_unclaimed_rewards(&users.farmer2, &seed_id_booster, &tokens.neth);
-    e.unlock_and_withdraw_seed(&users.farmer2, &booster_id, 0, to_yocto("9")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &booster_id, 0, to_yocto("9")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer2), to_yocto("9"));
     assert_eq!(e.get_farmer_seed(&users.farmer2, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(0.0));
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, to_yocto("150"), to_yocto("150"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
-    e.unlock_and_withdraw_seed(&users.farmer2, &booster_id, 0, to_yocto("1")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &booster_id, 0, to_yocto("1")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer2), to_yocto("10"));
     assert_eq!(e.get_farmer_seed(&users.farmer2, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], Value::Null);
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, to_yocto("150"), to_yocto("150"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
@@ -988,9 +988,9 @@ fn test_booster_seed_mutli_farm(){
 
     println!("> farmer1 withdraw all seed at : {}", e.current_time());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("50")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), to_yocto("50"));
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("50")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, to_yocto("100"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
 
@@ -1022,7 +1022,7 @@ fn test_booster_seed_mutli_farm(){
 
 
     println!("> farmer2 withdraw all seed at : {}, meanwhile claim all reward by seed", e.current_time());
-    e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, to_yocto("100")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, 0, to_yocto("100")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer2), to_yocto("100"));
     e.get_farmer_seed(&users.farmer2, &seed_id).is_null();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, to_yocto("50"), to_yocto("50"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
@@ -1033,8 +1033,8 @@ fn test_booster_seed_mutli_farm(){
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.wnear), to_yocto("32.5"));
     e.ft_storage_deposit(&users.farmer2, &tokens.nref);
     e.ft_storage_deposit(&users.farmer2, &tokens.wnear);
-    e.withdraw_reward(&users.farmer2, &tokens.nref, None).assert_success();
-    e.withdraw_reward(&users.farmer2, &tokens.wnear, None).assert_success();
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.nref, None).unwrap_json::<bool>());
+    assert_eq!(true, e.withdraw_reward(&users.farmer2, &tokens.wnear, None).unwrap_json::<bool>());
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.nref), 0);
     assert_eq!(e.get_farmer_reward(&users.farmer2, &tokens.wnear), 0);
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.farmer2), to_yocto("65"));
@@ -1053,7 +1053,7 @@ fn test_booster_seed_mutli_farm(){
 
     println!("> farmer1 unclock and withdraw all seed at : {}, meanwhile claim all reward by seed", e.current_time());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), to_yocto("50"));
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("50")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
     assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Ended));

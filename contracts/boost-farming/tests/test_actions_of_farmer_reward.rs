@@ -123,14 +123,16 @@ fn test_withdraw_reward(){
     );
 
     // 2 : The account farmer1.near is not registered
+    let outcome = e.withdraw_reward(&users.farmer1, &tokens.nref, None);
+    assert_eq!(false, outcome.unwrap_json::<bool>());
     assert_err!(
-        e.withdraw_reward(&users.farmer1, &tokens.nref, None),
+        outcome,
         "The account farmer1.near is not registered"
     );
 
     e.ft_storage_deposit(&users.farmer1, &tokens.nref);
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.nref), to_yocto("10"));
-    e.withdraw_reward(&users.farmer1, &tokens.nref, None).assert_success();
+    assert_eq!(true, e.withdraw_reward(&users.farmer1, &tokens.nref, None).unwrap_json::<bool>());
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.nref), 0);
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.farmer1), to_yocto("10"));
 }

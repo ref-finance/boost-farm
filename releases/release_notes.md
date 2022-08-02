@@ -1,5 +1,8 @@
 # Release Notes
 
+Version 0.2.5
+1. added return values to callback_withdraw_seed & callback_post_withdraw_reward
+
 Version 0.2.4
 1. implement audit recommendation
 
