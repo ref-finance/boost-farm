@@ -162,7 +162,7 @@ impl Contract {
     }
 
     #[private]
-    pub fn callback_withdraw_seed(&mut self, seed_id: SeedId, sender_id: AccountId, amount: U128) {
+    pub fn callback_withdraw_seed(&mut self, seed_id: SeedId, sender_id: AccountId, amount: U128) -> bool {
         require!(
             env::promise_results_count() == 1,
             E001_PROMISE_RESULT_COUNT_INVALID
@@ -184,6 +184,7 @@ impl Contract {
                     success: false,
                 }
                 .emit();
+                false
             }
             PromiseResult::Successful(_) => {
                 Event::SeedWithdraw {
@@ -193,6 +194,7 @@ impl Contract {
                     success: true,
                 }
                 .emit();
+                true
             }
         }
     }
