@@ -152,7 +152,7 @@ fn test_unlock_and_withdraw_seed(){
 
     // success
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("75")).assert_success();
+    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("75")).unwrap_json::<bool>());
     assert!(e.get_farmer_seed(&users.farmer1, &seed_id).is_null());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("75"));
 }

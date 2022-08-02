@@ -12,5 +12,5 @@ fn test_update(){
     );
 
     e.upgrade_contract(&e.owner, boost_farm_wasm_bytes()).assert_success();
-    assert_eq!(e.get_metadata().version, "0.2.4".to_string());
+    assert_eq!(e.get_metadata().version, "0.2.5".to_string());
 }

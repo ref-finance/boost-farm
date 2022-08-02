@@ -77,13 +77,11 @@ fn test_modify_booster(){
     );
 
     // 5 : E203_EXCEED_FARM_NUM_IN_BOOST
-    assert_err!(print e.modify_booster(&e.owner, &booster_id, &booster_info_exceed_farm));
     assert_err!(
         e.modify_booster(&e.owner, &booster_id, &booster_info_exceed_farm),
         E203_EXCEED_FARM_NUM_IN_BOOST
     );
 
-    assert_err!(print e.modify_booster(&e.owner, &booster_id, &booster_info_exceed_seed));
     // 6 : E204_EXCEED_SEED_NUM_IN_BOOSTER
     assert_err!(
         e.modify_booster(&e.owner, &booster_id, &booster_info_exceed_seed),
