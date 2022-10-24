@@ -128,6 +128,8 @@ pub enum RunningState {
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct ContractData {
     pub owner_id: AccountId,
+    pub next_owner_id: Option<AccountId>,
+    pub next_owner_accept_deadline: Option<u64>,
     pub state: RunningState,
     pub operators: UnorderedSet<AccountId>,
     pub config: LazyOption<Config>,
@@ -148,7 +150,8 @@ pub struct ContractData {
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VersionedContractData {
     V0100(ContractDataV0100),
-    V0101(ContractData),
+    V0101(ContractDataV0101),
+    V0102(ContractData),
 }
 
 #[near_bindgen]
@@ -163,8 +166,10 @@ impl Contract {
     pub fn new(owner_id: AccountId) -> Self {
         require!(!env::state_exists(), E000_ALREADY_INIT);
         Self {
-            data: VersionedContractData::V0101(ContractData {
+            data: VersionedContractData::V0102(ContractData {
                 owner_id: owner_id.into(),
+                next_owner_id: None,
+                next_owner_accept_deadline: None,
                 state: RunningState::Running,
                 operators: UnorderedSet::new(StorageKeys::Operator),
                 config: LazyOption::new(StorageKeys::Config, Some(&Config::default())),
@@ -185,18 +190,16 @@ impl Contract {
         self.data().config.get().unwrap()
     }
 
-    #[allow(unreachable_patterns)]
     fn data(&self) -> &ContractData {
         match &self.data {
-            VersionedContractData::V0101(data) => data,
+            VersionedContractData::V0102(data) => data,
             _ => unimplemented!(),
         }
     }
 
-    #[allow(unreachable_patterns)]
     fn data_mut(&mut self) -> &mut ContractData {
         match &mut self.data {
-            VersionedContractData::V0101(data) => data,
+            VersionedContractData::V0102(data) => data,
             _ => unimplemented!(),
         }
     }

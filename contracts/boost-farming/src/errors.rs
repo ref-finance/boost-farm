@@ -7,6 +7,7 @@ pub const E004_CONTRACT_PAUSED: &str = "E004: contract paused";
 pub const E005_NOT_ALLOWED_ON_CUR_STATE: &str = "E005: not allowed on current state";
 pub const E006_NOT_IMPLEMENTED: &str = "E006: not implemented";
 pub const E007_INVALID_OPERATOR: &str = "E007: invalid operator";
+pub const E008_ALREADY_ACCEPTED: &str = "E008: already accepted";
 
 pub const E100_ACC_NOT_REGISTERED: &str = "E100: account not registered";
 pub const E101_INSUFFICIENT_BALANCE: &str = "E101: insufficient balance";
