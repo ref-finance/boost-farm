@@ -140,6 +140,10 @@ pub trait TokenPostActions {
     fn callback_withdraw_seed_slashed(&mut self, seed_id: SeedId, amount: U128);
 
     fn callback_withdraw_seed_lostfound(&mut self, seed_id: SeedId, sender_id: AccountId, amount: U128);
+
+    fn callback_withdraw_beneficiary(&mut self, farm_id: FarmId, amount: U128);
+
+    fn callback_withdraw_undistributed(&mut self, farm_id: FarmId, amount: U128);
 }
 
 pub fn wrap_mft_token_id(token_id: &str) -> String {
