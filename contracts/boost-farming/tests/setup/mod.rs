@@ -49,7 +49,7 @@ mod booster;
 pub use booster::*;
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
-    PREV_BOOST_FARMING_WASM_BYTES => "../../res/boost_farming.wasm",
+    PREV_BOOST_FARMING_WASM_BYTES => "../../releases/boost_farming_025_release.wasm",
     BOOST_FARMING_WASM_BYTES => "../../res/boost_farming.wasm",
 
     FUNGIBLE_TOKEN_WASM_BYTES => "../../res/mock_ft.wasm",

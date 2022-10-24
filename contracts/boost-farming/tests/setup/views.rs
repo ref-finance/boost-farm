@@ -7,9 +7,24 @@ use near_sdk::AccountId;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(crate = "near_sdk::serde")]
+pub struct Metadata020 {
+    pub version: String,
+    pub owner_id: AccountId,
+    pub state: RunningState,
+    pub operators: Vec<AccountId>,
+    pub farmer_count: U64,
+    pub farm_count: U64,
+    pub outdated_farm_count: U64,
+    pub seed_count: U64,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Metadata {
     pub version: String,
     pub owner_id: AccountId,
+    pub next_owner_id: Option<AccountId>,
+    pub next_owner_accept_deadline: Option<u64>,
     pub state: RunningState,
     pub operators: Vec<AccountId>,
     pub farmer_count: U64,
@@ -44,6 +59,13 @@ pub struct Config {
 }
 
 impl Env {
+
+    pub fn get_metadata020(&self) -> Metadata020{
+        self.owner
+        .view_method_call(
+            self.farming_contract.contract.get_metadata()
+        ).unwrap_json::<Metadata020>()
+    }
 
     pub fn get_metadata(&self) -> Metadata{
         self.owner

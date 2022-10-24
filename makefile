@@ -6,8 +6,19 @@ build: contracts/boost-farming
 	mkdir -p res
 	cp target/wasm32-unknown-unknown/release/boost_farming.wasm ./res/boost_farming.wasm
 
+unittest: build
+ifdef TC
+	RUSTFLAGS=$(RFLAGS) cargo test $(TC) -p boost-farming --lib -- --nocapture
+else
+	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --lib -- --nocapture
+endif
+
 test: build mock-ft mock-mft
-	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming
+ifdef TF
+	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --test $(TF) -- --nocapture
+else
+	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --tests
+endif
 
 rs-sandbox: build mock-ft mock-mft sandbox-rs
 	RUSTFLAGS=$(RFLAGS) cargo run -p sandbox-rs --example sand_owner

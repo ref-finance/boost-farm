@@ -197,6 +197,77 @@ impl Contract {
         }
     }
 
+    #[payable]
+    pub fn withdraw_from_beneficiary_account(&mut self, farm_id: FarmId) -> Promise {
+        assert_one_yocto();
+        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
+        require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
+        
+        let (seed_id, _) = parse_farm_id(&farm_id);
+        let mut seed = self.internal_unwrap_seed(&seed_id);
+
+        let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let amount = seed_farm.amount_of_beneficiary;
+        require!(amount > 0, E101_INSUFFICIENT_BALANCE);
+        let reward_token = seed_farm.terms.reward_token.clone();
+        seed_farm.amount_of_beneficiary = 0;
+        self.internal_set_seed(&seed_id, seed);
+
+        ext_fungible_token::ft_transfer(
+            self.data().owner_id.clone(),
+            amount.into(),
+            None,
+            reward_token,
+            1, // one yocto near
+            GAS_FOR_REWARD_TRANSFER,
+        )
+        .then(ext_self::callback_withdraw_beneficiary(
+            farm_id.clone(),
+            amount.into(),
+            env::current_account_id(),
+            0,
+            GAS_FOR_RESOLVE_REWARD_TRANSFER,
+        ))
+    }
+
+    #[payable]
+    pub fn withdraw_from_undistributed_reward(&mut self, farm_id: FarmId, amount: U128) -> Promise {
+        assert_one_yocto();
+        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
+        require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
+
+        let mut amount: Balance = amount.into();
+        
+        let (seed_id, _) = parse_farm_id(&farm_id);
+        let mut seed = self.internal_unwrap_seed(&seed_id);
+
+        let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let amount_availabe = seed_farm.total_reward - seed_farm.distributed_reward;
+        if amount == 0 {
+            amount = amount_availabe;
+        }
+        require!(amount <= amount_availabe && amount_availabe > 0, E101_INSUFFICIENT_BALANCE);
+        let reward_token = seed_farm.terms.reward_token.clone();
+        seed_farm.total_reward -= amount;
+        self.internal_set_seed(&seed_id, seed);
+
+        ext_fungible_token::ft_transfer(
+            self.data().owner_id.clone(),
+            amount.into(),
+            None,
+            reward_token,
+            1, // one yocto near
+            GAS_FOR_REWARD_TRANSFER,
+        )
+        .then(ext_self::callback_withdraw_undistributed(
+            farm_id.clone(),
+            amount.into(),
+            env::current_account_id(),
+            0,
+            GAS_FOR_RESOLVE_REWARD_TRANSFER,
+        ))
+    }
+
     #[private]
     pub fn callback_withdraw_seed_lostfound(&mut self, seed_id: SeedId, sender_id: AccountId, amount: U128) {
         require!(
@@ -267,4 +338,79 @@ impl Contract {
         }
     }
 
+    #[private]
+    pub fn callback_withdraw_beneficiary(&mut self, farm_id: FarmId, amount: U128) {
+        require!(
+            env::promise_results_count() == 1,
+            E001_PROMISE_RESULT_COUNT_INVALID
+        );
+        let amount: Balance = amount.into();
+        match env::promise_result(0) {
+            PromiseResult::NotReady => unreachable!(),
+            PromiseResult::Failed => {
+                // add amount back to amount_of_beneficiary,
+                // without touching any seed distribution logic to save gas consumption
+                let (seed_id, _) = parse_farm_id(&farm_id);
+                let mut seed: Seed = self.data().seeds.get(&seed_id).map(|v| v.into()).expect(E301_SEED_NOT_EXIST);
+                let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+                seed_farm.amount_of_beneficiary += amount;
+                self.data_mut().seeds.insert(&seed_id, &seed.into());
+
+                Event::RewardWithdrawBeneficiary {
+                    owner_id: &self.data().owner_id,
+                    farm_id: &farm_id,
+                    withdraw_amount: &U128(amount),
+                    success: false,
+                }
+                .emit();
+            },
+            PromiseResult::Successful(_) => {
+                Event::RewardWithdrawBeneficiary {
+                    owner_id: &self.data().owner_id,
+                    farm_id: &farm_id,
+                    withdraw_amount: &U128(amount),
+                    success: true,
+                }
+                .emit();
+            }
+        }
+    }
+
+    #[private]
+    pub fn callback_withdraw_undistributed(&mut self, farm_id: FarmId, amount: U128) {
+        require!(
+            env::promise_results_count() == 1,
+            E001_PROMISE_RESULT_COUNT_INVALID
+        );
+        let amount: Balance = amount.into();
+        match env::promise_result(0) {
+            PromiseResult::NotReady => unreachable!(),
+            PromiseResult::Failed => {
+                // add amount back to total_reward,
+                // without touching any seed distribution logic to save gas consumption
+                let (seed_id, _) = parse_farm_id(&farm_id);
+                let mut seed: Seed = self.data().seeds.get(&seed_id).map(|v| v.into()).expect(E301_SEED_NOT_EXIST);
+                let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+                seed_farm.total_reward += amount;
+                self.data_mut().seeds.insert(&seed_id, &seed.into());
+
+                Event::RewardWithdrawUndistributed {
+                    owner_id: &self.data().owner_id,
+                    farm_id: &farm_id,
+                    withdraw_amount: &U128(amount),
+                    success: false,
+                }
+                .emit();
+            },
+            PromiseResult::Successful(_) => {
+                Event::RewardWithdrawUndistributed {
+                    owner_id: &self.data().owner_id,
+                    farm_id: &farm_id,
+                    withdraw_amount: &U128(amount),
+                    success: true,
+                }
+                .emit();
+            }
+        }
+    }
 }

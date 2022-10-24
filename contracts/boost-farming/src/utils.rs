@@ -15,6 +15,7 @@ pub const DEFAULT_MAX_LOCKING_DURATION_SEC: DurationSec = 3600 * 24 * 30 * 12;
 pub const DEFAULT_MAX_LOCKING_REWARD_RATIO: u32 = 20000;
 pub const MIN_LOCKING_REWARD_RATIO: u32 = 10000; 
 pub const MAX_NUM_SEEDS_PER_BOOSTER: usize = 16;
+pub const AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT: u64 = 168 * 3600 * 1000;
 
 pub const STORAGE_BALANCE_MIN_BOUND: u128 = 100_000_000_000_000_000_000_000;
 pub const TGAS: u64 = 1_000_000_000_000;
@@ -140,6 +141,10 @@ pub trait TokenPostActions {
     fn callback_withdraw_seed_slashed(&mut self, seed_id: SeedId, amount: U128);
 
     fn callback_withdraw_seed_lostfound(&mut self, seed_id: SeedId, sender_id: AccountId, amount: U128);
+
+    fn callback_withdraw_beneficiary(&mut self, farm_id: FarmId, amount: U128);
+
+    fn callback_withdraw_undistributed(&mut self, farm_id: FarmId, amount: U128);
 }
 
 pub fn wrap_mft_token_id(token_id: &str) -> String {

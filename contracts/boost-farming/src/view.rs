@@ -7,6 +7,8 @@ use near_sdk::json_types::U64;
 pub struct Metadata {
     pub version: String,
     pub owner_id: AccountId,
+    pub next_owner_id: Option<AccountId>,
+    pub next_owner_accept_deadline: Option<u64>,
     pub state: RunningState,
     pub operators: Vec<AccountId>,
     pub farmer_count: U64,
@@ -30,6 +32,8 @@ impl Contract {
         Metadata {
             version: env!("CARGO_PKG_VERSION").to_string(),
             owner_id: self.data().owner_id.clone(),
+            next_owner_id: self.data().next_owner_id.clone(),
+            next_owner_accept_deadline: self.data().next_owner_accept_deadline.clone(),
             state: self.data().state.clone(),
             operators: self.data().operators.to_vec(),
             farmer_count: self.data().farmer_count.into(),

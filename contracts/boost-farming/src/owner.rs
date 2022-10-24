@@ -26,15 +26,71 @@ impl Contract {
             E002_NOT_ALLOWED
         );
     }
+
+    fn check_next_owner_deadline(&mut self) {
+        if let Some(deadline) = self.data().next_owner_accept_deadline {
+            // check if an existing transfer has expired
+            if env::block_timestamp_ms() > deadline {
+                self.data_mut().next_owner_id = None;
+                self.data_mut().next_owner_accept_deadline = None;
+            }
+        }
+    }
 }
 
 #[near_bindgen]
 impl Contract {
     #[payable]
-    pub fn set_owner(&mut self, owner_id: AccountId) {
+    pub fn grant_next_owner(&mut self, next_owner_id: AccountId) {
         assert_one_yocto();
         self.assert_owner();
-        self.data_mut().owner_id = owner_id;
+        require!(self.data().owner_id != next_owner_id, E002_NOT_ALLOWED);
+
+        self.check_next_owner_deadline();
+
+        require!(self.data().next_owner_id.is_none(), E002_NOT_ALLOWED);
+        self.data_mut().next_owner_id = Some(next_owner_id);
+        self.data_mut().next_owner_accept_deadline = Some(env::block_timestamp_ms() + AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT);
+    }
+
+    #[payable]
+    pub fn accept_next_owner(&mut self) {
+        assert_one_yocto();
+        self.check_next_owner_deadline();
+
+        let next_owner_id = self.data().next_owner_id.clone();
+        require!(next_owner_id.is_some() && next_owner_id.unwrap() == env::predecessor_account_id(), E002_NOT_ALLOWED);
+        require!(self.data().next_owner_accept_deadline.is_some(), E008_ALREADY_ACCEPTED);
+
+        self.data_mut().next_owner_accept_deadline = None;
+    }
+
+    #[payable]
+    pub fn confirm_next_owner(&mut self) {
+        assert_one_yocto();
+        self.assert_owner();
+        self.check_next_owner_deadline();
+
+        require!(self.data().next_owner_accept_deadline.is_none(), E002_NOT_ALLOWED);
+        require!(self.data().next_owner_id.is_some(), E002_NOT_ALLOWED);
+
+        if let Some(next_owner_id) = self.data().next_owner_id.clone() {
+            self.data_mut().owner_id = next_owner_id.clone();
+        }
+
+        self.data_mut().next_owner_id = None;
+    }
+
+    #[payable]
+    pub fn cancel_next_owner(&mut self) {
+        assert_one_yocto();
+        self.assert_owner();
+        self.check_next_owner_deadline();
+
+        require!(self.data().next_owner_id.is_some(), E002_NOT_ALLOWED);
+
+        self.data_mut().next_owner_id = None;
+        self.data_mut().next_owner_accept_deadline = None;
     }
 
     #[payable]
@@ -96,8 +152,9 @@ impl Contract {
         // see if ContractData need upgrade
         contract.data = 
         match contract.data {
-            VersionedContractData::V0100(data) => VersionedContractData::V0101(data.into()),
-            VersionedContractData::V0101(data) => VersionedContractData::V0101(data),
+            VersionedContractData::V0100(data) => VersionedContractData::V0102(data.into()),
+            VersionedContractData::V0101(data) => VersionedContractData::V0102(data.into()),
+            VersionedContractData::V0102(data) => VersionedContractData::V0102(data),
         };
         contract
     }
@@ -176,5 +233,67 @@ mod upgrade {
             sys::promise_return(promise_id);
             
         }
+    }
+}
+
+#[cfg(test)]
+mod owner_tests {
+
+    use super::*;
+
+    use near_sdk::test_utils::{accounts, VMContextBuilder};
+    use near_sdk::testing_env;
+
+    fn setup_contract() -> (VMContextBuilder, Contract) {
+        let mut context = VMContextBuilder::new();
+        testing_env!(context.predecessor_account_id(accounts(0)).build());
+        let contract = Contract::new(accounts(0));
+        (context, contract)
+    }
+
+    #[test]
+    fn transfer_owner_near_deadline() {
+        let (mut context, mut contract) = setup_contract();
+        testing_env!(context
+            .block_timestamp(0)
+            .predecessor_account_id(accounts(0))
+            .attached_deposit(1)
+            .build()
+        );
+        contract.grant_next_owner(accounts(2));
+        assert_eq!(contract.get_metadata().next_owner_accept_deadline.unwrap(), AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT);
+
+        // 5 secs before deadline
+        testing_env!(context
+            .block_timestamp(AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT * 1_000_000 - 5 * 1_000_000_000)
+            .predecessor_account_id(accounts(2))
+            .attached_deposit(1)
+            .build()
+        );
+        contract.accept_next_owner();
+        assert!(contract.get_metadata().next_owner_accept_deadline.is_none());
+    }
+
+    #[test]
+    #[should_panic(expected = "E002: not allowed for the caller")]
+    fn transfer_owner_after_deadline() {
+        let (mut context, mut contract) = setup_contract();
+        testing_env!(context
+            .block_timestamp(0)
+            .predecessor_account_id(accounts(0))
+            .attached_deposit(1)
+            .build()
+        );
+        contract.grant_next_owner(accounts(2));
+        assert_eq!(contract.get_metadata().next_owner_accept_deadline.unwrap(), AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT);
+
+        // 5 secs after deadline
+        testing_env!(context
+            .block_timestamp(AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT * 1_000_000 + 5 * 1_000_000_000)
+            .predecessor_account_id(accounts(2))
+            .attached_deposit(1)
+            .build()
+        );
+        contract.accept_next_owner();
     }
 }

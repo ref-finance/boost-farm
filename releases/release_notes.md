@@ -1,7 +1,11 @@
 # Release Notes
 
+Version 0.3.0
+1. add withdraw_from_undistributed_reward and withdraw_from_beneficiary_account interfaces
+2. improve owner transfer process
+
 Version 0.2.5
-1. added return values to callback_withdraw_seed & callback_post_withdraw_reward
+1. add return values to callback_withdraw_seed & callback_post_withdraw_reward
 
 Version 0.2.4
 1. implement audit recommendation

@@ -88,6 +88,18 @@ pub enum Event<'a> {
         token_id: &'a AccountId,
         withdraw_amount: &'a U128,
     },
+    RewardWithdrawBeneficiary {
+        owner_id: &'a AccountId,
+        farm_id: &'a String,
+        withdraw_amount: &'a U128,
+        success: bool,
+    },
+    RewardWithdrawUndistributed {
+        owner_id: &'a AccountId,
+        farm_id: &'a String,
+        withdraw_amount: &'a U128,
+        success: bool,
+    },
 }
 
 impl Event<'_> {
