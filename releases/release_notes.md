@@ -1,5 +1,8 @@
 # Release Notes
 
+Version 0.3.1
+1. add amount_of_withdrew_beneficiary to record the beneficiary account withdraw history
+
 Version 0.3.0
 1. add withdraw_from_undistributed_reward and withdraw_from_beneficiary_account interfaces
 2. improve owner transfer process

@@ -98,24 +98,32 @@ impl Contract {
         let farmer_seed_power = farmer_seed.get_seed_power();
 
         let mut new_user_rps = HashMap::new();
-        for (farm_id, VSeedFarm::Current(seed_farm)) in &seed.farms {
+        for (farm_id, vfarm) in &seed.farms {
+            let (seed_farm_rps, seed_farm_terms_reward_token, seed_farm_total_reward) = match vfarm {
+                VSeedFarm::V0(farm) => {
+                    (farm.rps, farm.terms.reward_token.clone(), farm.total_reward)
+                }
+                VSeedFarm::Current(farm) => {
+                    (farm.rps, farm.terms.reward_token.clone(), farm.total_reward)
+                }
+            };
             let farmer_rps = farmer_seed.user_rps.get(farm_id).unwrap_or(&BigDecimal::zero()).clone();
-            let diff = seed_farm.rps - farmer_rps;
+            let diff = seed_farm_rps - farmer_rps;
             let reward_amount = diff.round_down_mul_u128(farmer_seed_power);
             if reward_amount > 0 {
                 rewards.insert(
-                    seed_farm.terms.reward_token.clone(),
+                    seed_farm_terms_reward_token.clone(),
                     reward_amount
                         + rewards
-                            .get(&seed_farm.terms.reward_token)
+                            .get(&seed_farm_terms_reward_token)
                             .unwrap_or(&0_u128),
                 );
                 claimed.insert(farm_id.clone(), reward_amount);
             }
 
             // bypass non-reward
-            if seed_farm.total_reward > 0 {
-                new_user_rps.insert(farm_id.clone(), seed_farm.rps);
+            if seed_farm_total_reward > 0 {
+                new_user_rps.insert(farm_id.clone(), seed_farm_rps);
             }
         }
         farmer_seed.user_rps = new_user_rps;

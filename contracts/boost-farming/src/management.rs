@@ -13,8 +13,15 @@ impl Contract {
         let (seed_id, _) = parse_farm_id(&farm_id);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
-        let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
-        seed_farm.terms.daily_reward = daily_reward.0;
+        let vfarm = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+        match vfarm {
+            VSeedFarm::V0(farm) => {
+                farm.terms.daily_reward = daily_reward.0;
+            }
+            VSeedFarm::Current(farm) => {
+                farm.terms.daily_reward = daily_reward.0;
+            }
+        }
 
         self.internal_set_seed(&seed_id, seed);
     }
@@ -206,11 +213,21 @@ impl Contract {
         let (seed_id, _) = parse_farm_id(&farm_id);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
-        let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
-        let amount = seed_farm.amount_of_beneficiary;
+        let v_farm = seed.farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let mut seed_farm = match v_farm {
+            VSeedFarm::V0(farm) => {
+                farm.into()
+            }
+            VSeedFarm::Current(farm) => {
+                farm
+            }
+        };
+
+        let amount = seed_farm.amount_of_beneficiary - seed_farm.amount_of_withdrew_beneficiary;
         require!(amount > 0, E101_INSUFFICIENT_BALANCE);
         let reward_token = seed_farm.terms.reward_token.clone();
-        seed_farm.amount_of_beneficiary = 0;
+        seed_farm.amount_of_withdrew_beneficiary = seed_farm.amount_of_beneficiary;
+        seed.farms.insert(farm_id.clone(), seed_farm.into());
         self.internal_set_seed(&seed_id, seed);
 
         ext_fungible_token::ft_transfer(
@@ -241,7 +258,16 @@ impl Contract {
         let (seed_id, _) = parse_farm_id(&farm_id);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
-        let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let v_farm = seed.farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let mut seed_farm = match v_farm {
+            VSeedFarm::V0(farm) => {
+                farm.into()
+            }
+            VSeedFarm::Current(farm) => {
+                farm
+            }
+        };
+        
         let amount_availabe = seed_farm.total_reward - seed_farm.distributed_reward;
         if amount == 0 {
             amount = amount_availabe;
@@ -249,6 +275,7 @@ impl Contract {
         require!(amount <= amount_availabe && amount_availabe > 0, E101_INSUFFICIENT_BALANCE);
         let reward_token = seed_farm.terms.reward_token.clone();
         seed_farm.total_reward -= amount;
+        seed.farms.insert(farm_id.clone(), seed_farm.into());
         self.internal_set_seed(&seed_id, seed);
 
         ext_fungible_token::ft_transfer(
@@ -352,8 +379,11 @@ impl Contract {
                 // without touching any seed distribution logic to save gas consumption
                 let (seed_id, _) = parse_farm_id(&farm_id);
                 let mut seed: Seed = self.data().seeds.get(&seed_id).map(|v| v.into()).expect(E301_SEED_NOT_EXIST);
-                let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
-                seed_farm.amount_of_beneficiary += amount;
+                if let VSeedFarm::Current(farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST) {
+                    farm.amount_of_withdrew_beneficiary -= amount;
+                } else {
+                    env::panic_str(E006_NOT_IMPLEMENTED);
+                }
                 self.data_mut().seeds.insert(&seed_id, &seed.into());
 
                 Event::RewardWithdrawBeneficiary {
@@ -390,8 +420,12 @@ impl Contract {
                 // without touching any seed distribution logic to save gas consumption
                 let (seed_id, _) = parse_farm_id(&farm_id);
                 let mut seed: Seed = self.data().seeds.get(&seed_id).map(|v| v.into()).expect(E301_SEED_NOT_EXIST);
-                let VSeedFarm::Current(seed_farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
-                seed_farm.total_reward += amount;
+                if let VSeedFarm::Current(farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST) {
+                    farm.total_reward += amount;
+                } else {
+                    env::panic_str(E006_NOT_IMPLEMENTED);
+                }
+
                 self.data_mut().seeds.insert(&seed_id, &seed.into());
 
                 Event::RewardWithdrawUndistributed {
