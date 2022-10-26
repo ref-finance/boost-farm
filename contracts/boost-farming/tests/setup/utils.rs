@@ -24,12 +24,13 @@ pub fn assert_farm_info(seed_farm: SeedFarm, farm_id: &FarmId, reward_token: &Us
     assert_eq!(seed_farm.terms.daily_reward, daily_reward);
 }
 
-pub fn assert_farm_detail(seed_farm: SeedFarm, total_reward: Balance, distributed_at: Timestamp, distributed_reward: Balance, claimed_reward: Balance, amount_of_beneficiary: Balance, status: Option<FarmStatus>){
+pub fn assert_farm_detail(seed_farm: SeedFarm, total_reward: Balance, distributed_at: Timestamp, distributed_reward: Balance, claimed_reward: Balance, amount_of_beneficiary: Balance, amount_of_withdrew_beneficiary: Balance, status: Option<FarmStatus>){
     assert_eq!(seed_farm.total_reward, total_reward);
     assert_eq!(seed_farm.distributed_at, distributed_at);
     assert_eq!(seed_farm.distributed_reward, distributed_reward);
     assert_eq!(seed_farm.claimed_reward, claimed_reward);
     assert_eq!(seed_farm.amount_of_beneficiary, amount_of_beneficiary);
+    assert_eq!(seed_farm.amount_of_withdrew_beneficiary, amount_of_withdrew_beneficiary);
     assert_eq!(format!("{:?}", seed_farm.status), format!("{:?}", status));
 }
 
