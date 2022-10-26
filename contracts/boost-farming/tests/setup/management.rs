@@ -162,5 +162,39 @@ impl Env {
             deposit,
         )
     }
-    
+
+    pub fn withdraw_from_beneficiary_account(
+        &self,
+        operator: &UserAccount,
+        farm_id: &FarmId, 
+        deposit: u128
+    ) -> ExecutionResult {
+        operator
+        .function_call(
+            self.farming_contract.contract.withdraw_from_beneficiary_account(
+                farm_id.clone()
+            ),
+            MAX_GAS.0,
+            deposit,
+        )
+    }
+
+    pub fn withdraw_from_undistributed_reward(
+        &self,
+        operator: &UserAccount,
+        farm_id: &FarmId, 
+        amount: u128,
+        deposit: u128
+    ) -> ExecutionResult {
+        operator
+        .function_call(
+            self.farming_contract.contract.withdraw_from_undistributed_reward(
+                farm_id.clone(),
+                U128(amount)
+            ),
+            MAX_GAS.0,
+            deposit,
+        )
+    }
+
 }
