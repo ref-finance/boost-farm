@@ -45,22 +45,31 @@ impl From<Seed> for VSeed {
 }
 
 impl Seed {
-    #[allow(unreachable_patterns)]
+
     pub fn update(&mut self) {
         for (_, vfarm) in self.farms.iter_mut() {
             match vfarm {
+                VSeedFarm::V0(farm) => {
+                    farm.update(self.total_seed_power);
+                }
                 VSeedFarm::Current(farm) => {
                     farm.update(self.total_seed_power);
                 }
-                _ => {}
             }
         }
     }
 
     pub fn update_claimed(&mut self, claimed: &HashMap<FarmId, Balance>) {
         for (farm_id, amount) in claimed {
-            let VSeedFarm::Current(seed_farm) = self.farms.get_mut(farm_id).unwrap();
-            seed_farm.claimed_reward += amount;
+            let vfarm = self.farms.get_mut(farm_id).unwrap();
+            match vfarm {
+                VSeedFarm::V0(farm) => {
+                    farm.claimed_reward += amount;
+                }
+                VSeedFarm::Current(farm) => {
+                    farm.claimed_reward += amount;
+                }
+            }
         }
     }
 
