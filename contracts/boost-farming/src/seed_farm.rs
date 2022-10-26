@@ -15,12 +15,14 @@ pub struct FarmTerms {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Serialize)]
 #[serde(crate = "near_sdk::serde")]
 pub enum VSeedFarm {
+    V0(SeedFarmV0),
     Current(SeedFarm),
 }
 
 impl From<VSeedFarm> for SeedFarm {
     fn from(v: VSeedFarm) -> Self {
         match v {
+            VSeedFarm::V0(c) => c.into(),
             VSeedFarm::Current(c) => c,
         }
     }
@@ -74,6 +76,9 @@ pub struct SeedFarm {
     /// when there is no seed token staked, reward goes to beneficiary
     #[serde(with = "u128_dec_format")]
     pub amount_of_beneficiary: Balance,
+    /// the amount of has been withdrew from benificiary
+    #[serde(with = "u128_dec_format")]
+    pub amount_of_withdrew_beneficiary: Balance,
 
     #[serde(skip)]
     pub rps: BigDecimal,
@@ -92,6 +97,7 @@ impl SeedFarm {
             distributed_reward: 0,
             claimed_reward: 0,
             amount_of_beneficiary: 0,
+            amount_of_withdrew_beneficiary: 0,
             rps: BigDecimal::from(0_u32),
             status: Some(FarmStatus::Created),
         }

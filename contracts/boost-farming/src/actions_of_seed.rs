@@ -79,7 +79,16 @@ impl Contract {
         let (seed_id, _) = parse_farm_id(&farm_id);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
-        let VSeedFarm::Current(mut outdated_farm) = seed.farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let v_outdated_farm = seed.farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let mut outdated_farm = match v_outdated_farm {
+            VSeedFarm::V0(farm) => {
+                farm.into()
+            }
+            VSeedFarm::Current(farm) => {
+                farm
+            }
+        };
+
         outdated_farm.finalize();
 
         self.data_mut().outdated_farms.insert(&farm_id, &outdated_farm.into());
@@ -130,8 +139,15 @@ impl Contract {
         let (seed_id, _) = parse_farm_id(farm_id);
         let mut seed = self.internal_get_seed(&seed_id).expect(E301_SEED_NOT_EXIST);    
 
-        let VSeedFarm::Current(farm) = seed.farms.get_mut(farm_id).expect(E401_FARM_NOT_EXIST);
-        let ret = farm.add_reward(reward_token, amount);
+        let vfarm = seed.farms.get_mut(farm_id).expect(E401_FARM_NOT_EXIST);
+        let ret = match vfarm {
+            VSeedFarm::V0(farm) => {
+                farm.add_reward(reward_token, amount)
+            }
+            VSeedFarm::Current(farm) => {
+                farm.add_reward(reward_token, amount)
+            }
+        };
 
         self.internal_set_seed(&seed_id, seed);
 
