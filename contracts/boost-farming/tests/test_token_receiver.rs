@@ -20,7 +20,7 @@ fn test_reward(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at), to_yocto("10")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id), &farm_id, &tokens.nref, to_sec(start_at), to_yocto("10"));
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
     
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("100"));
 
@@ -54,7 +54,7 @@ fn test_reward(){
     println!("> deposit_reward at : {}", e.current_time());
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("100"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 }
 
 #[test]

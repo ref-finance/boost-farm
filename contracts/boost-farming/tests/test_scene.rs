@@ -44,32 +44,32 @@ fn test_normal_seed_single_farm(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at), to_yocto("10")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id), &farm_id, &tokens.nref, to_sec(start_at), to_yocto("10"));
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
 
     println!("> deposit_reward at : {}", e.current_time());
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
     println!("> no famer stake, first day reward to beneficiary");
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), 0, Some(FarmStatus::Running));
 
     
     println!("> farmer1 mft_stake_free_seed at : {}", e.current_time());
     e.mft_stake_free_seed(&users.farmer1, &token_id, to_yocto("100")).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_user_seed_info(e.get_farmer_seed(&users.farmer1, &seed_id), to_yocto("100"), 0, 0, 0, 0);
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, to_yocto("100"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("20"), 0, to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("20"), 0, to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("10"));
 
 
@@ -78,21 +78,21 @@ fn test_normal_seed_single_farm(){
     e.claim_reward_by_seed(&users.farmer1, &seed_id).assert_success();
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.nref), to_yocto("10"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("20"), to_yocto("10"), to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("20"), to_yocto("10"), to_yocto("10"), 0, Some(FarmStatus::Running));
 
 
     println!("> farmer2 mft_stake_lock_seed at : {}", e.current_time());
     
     e.mft_stake_lock_seed(&token_id, &users.farmer2, to_yocto("50"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
     let farmer2_unlock_time = e.current_time() + to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC);
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("20"), to_yocto("10"), to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("20"), to_yocto("10"), to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_user_seed_info(e.get_farmer_seed(&users.farmer2, &seed_id), 0, to_yocto("50"), to_yocto("100"), farmer2_unlock_time, DEFAULT_MAX_LOCKING_DURATION_SEC);
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, to_yocto("150"), to_yocto("200"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("30"), to_yocto("10"), to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("30"), to_yocto("10"), to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("5"));
 
@@ -109,7 +109,7 @@ fn test_normal_seed_single_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("40"), to_yocto("15"), to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("40"), to_yocto("15"), to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("15"));
 
 
@@ -123,7 +123,7 @@ fn test_normal_seed_single_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("50"), to_yocto("15"), to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("50"), to_yocto("15"), to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("20"));
 
@@ -163,7 +163,7 @@ fn test_normal_seed_single_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("60"), to_yocto("35"), to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("60"), to_yocto("35"), to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("15"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), 0);
 
@@ -177,12 +177,12 @@ fn test_normal_seed_single_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY * 5));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("100"), to_yocto("50"), to_yocto("10"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("100"), to_yocto("50"), to_yocto("10"), 0, Some(FarmStatus::Ended));
 
 
     println!("> restarted at : {}", e.current_time());
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("200"), e.current_time(), to_yocto("100"), to_yocto("50"), to_yocto("10"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("200"), e.current_time(), to_yocto("100"), to_yocto("50"), to_yocto("10"), 0, Some(FarmStatus::Running));
     assert_err!(
         e.remove_farm_from_seed(&e.owner, &farm_id),
         E405_FARM_NOT_ENDED
@@ -190,7 +190,7 @@ fn test_normal_seed_single_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY * 11));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("200"), e.current_time(), to_yocto("200"), to_yocto("50"), to_yocto("10"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("200"), e.current_time(), to_yocto("200"), to_yocto("50"), to_yocto("10"), 0, Some(FarmStatus::Ended));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref) <= to_yocto("140"));
     assert_eq!(format!("{:?}", e.get_farm(&farm_id)), format!("{:?}", e.list_seed_farms(&seed_id)[0]));
     assert_eq!(format!("{:?}", e.get_seed(&seed_id)), format!("{:?}", e.list_seeds_info().get(0).unwrap()));
@@ -202,7 +202,7 @@ fn test_normal_seed_single_farm(){
     assert_eq!(e.get_metadata().farm_count.0, 0);
     assert_eq!(e.get_metadata().outdated_farm_count.0, 1);
 
-    assert_farm_detail(e.get_outdated_farm(&farm_id), to_yocto("200"), e.current_time(), to_yocto("200"), to_yocto("50"), to_yocto("150"), None);
+    assert_farm_detail(e.get_outdated_farm(&farm_id), to_yocto("200"), e.current_time(), to_yocto("200"), to_yocto("50"), to_yocto("150"), 0, None);
     assert_eq!(format!("{:?}", e.get_outdated_farm(&farm_id)), format!("{:?}", e.list_outdated_farms()[0]));
     
 
@@ -257,30 +257,30 @@ fn test_normal_mutli_farm(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at + NANOS_PER_DAY), to_yocto("30")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id_0), &farm_id_0, &tokens.nref, to_sec(start_at + NANOS_PER_DAY), to_yocto("30"));
-    assert_farm_detail(e.get_farm(&farm_id_0), 0, start_at + NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0), 0, start_at + NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     e.create_farm(&e.owner, &seed_id, &tokens.wnear, to_sec(start_at), to_yocto("15")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id_1), &farm_id_1, &tokens.wnear, to_sec(start_at), to_yocto("15"));
-    assert_farm_detail(e.get_farm(&farm_id_1), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), 0, e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
-    assert_farm_detail(e.get_farm(&farm_id_1), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Pending));
+    assert_farm_detail(e.get_farm(&farm_id_0), 0, e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Pending));
 
     
     println!("> deposit_reward at : {}", e.current_time());
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("300"), &farm_id_0).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
     
     e.ft_mint(&tokens.wnear, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.wnear, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.wnear, &users.operator, to_yocto("150"), &farm_id_1).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     
 
     println!("> farmer1 mft_stake_free_seed at : {}", e.current_time());
@@ -291,8 +291,8 @@ fn test_normal_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("30"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("15"));
 
@@ -307,8 +307,8 @@ fn test_normal_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("45"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("22.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("15"));
@@ -323,8 +323,8 @@ fn test_normal_mutli_farm(){
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.wnear), to_yocto("22.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), 0);
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
 
 
     println!("> farmer1 withdraw all seed at : {}", e.current_time());
@@ -336,8 +336,8 @@ fn test_normal_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("90"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("60"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("90"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("60"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("45"));
@@ -356,8 +356,8 @@ fn test_normal_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("120"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("75"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("120"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("75"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("15"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("7.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("60"));
@@ -391,8 +391,8 @@ fn test_normal_mutli_farm(){
 
     e.skip_time(DEFAULT_MAX_LOCKING_DURATION_SEC);
     println!(">> time pass {}, now at : {}", to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC), e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("105"), 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("52.5"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("105"), 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("52.5"), to_yocto("15"), 0, Some(FarmStatus::Ended));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("195"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("82.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), 0);
@@ -404,8 +404,8 @@ fn test_normal_mutli_farm(){
     assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("50"), to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
 
 
     e.skip_time(DEFAULT_MAX_LOCKING_DURATION_SEC);
@@ -414,14 +414,14 @@ fn test_normal_mutli_farm(){
 
     println!("> restarted farm_id_0 at : {}", e.current_time());
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("75"), &farm_id_0).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("330"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("330"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
 
 
     println!("> farmer1 and farmer2 mft_stake_free_seed at : {}", e.current_time());
@@ -435,13 +435,13 @@ fn test_normal_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("360"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("360"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("20"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("10"));
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}, Insufficient reward, send all", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("375"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("375"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Ended));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("30"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("15"));
 }
@@ -511,31 +511,31 @@ fn test_mutli_seed_with_booster_and_normal(){
     e.create_farm(&e.owner, &seed_id_normal, &tokens.nref, to_sec(start_at + NANOS_PER_DAY), to_yocto("30")).assert_success();
     assert_seed(e.get_seed(&seed_id_normal), &seed_id_normal, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id_0_normal), &farm_id_0_normal, &tokens.nref, to_sec(start_at + NANOS_PER_DAY), to_yocto("30"));
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), 0, start_at + NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), 0, start_at + NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     e.create_farm(&e.owner, &seed_id_normal, &tokens.wnear, to_sec(start_at), to_yocto("15")).assert_success();
     assert_seed(e.get_seed(&seed_id_normal), &seed_id_normal, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id_1_normal), &farm_id_1_normal, &tokens.wnear, to_sec(start_at), to_yocto("15"));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
 
     println!("booster> create farm at : {}", e.current_time());
     e.create_farm(&e.owner, &seed_id_booster, &tokens.neth, to_sec(start_at + NANOS_PER_DAY), to_yocto("30")).assert_success();
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id_0_booster), &farm_id_0_booster, &tokens.neth, to_sec(start_at + NANOS_PER_DAY), to_yocto("30"));
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), 0, start_at + NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), 0, start_at + NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     e.create_farm(&e.owner, &seed_id_booster, &tokens.ndai, to_sec(start_at), to_yocto("15")).assert_success();
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id_1_booster), &farm_id_1_booster, &tokens.ndai, to_sec(start_at), to_yocto("15"));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), 0, e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Pending));
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), 0, e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Pending));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), 0, e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Pending));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), 0, e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Pending));
 
     
     println!("normal> deposit reward at : {}", e.current_time());
@@ -544,9 +544,9 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.neth, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("300"), &farm_id_0_normal).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
     e.deposit_reward(&tokens.neth, &users.operator, to_yocto("300"), &farm_id_0_booster).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
     
     println!("booster> deposit reward at : {}", e.current_time());
     e.ft_mint(&tokens.wnear, &users.operator, to_yocto("10000"));
@@ -554,9 +554,9 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(e.ft_balance_of(&tokens.wnear, &users.operator), to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.ndai, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.wnear, &users.operator, to_yocto("150"), &farm_id_1_normal).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     e.deposit_reward(&tokens.ndai, &users.operator, to_yocto("150"), &farm_id_1_booster).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
 
     println!("normal> farmer1 mft_stake_free_seed  at : {}", e.current_time());
     e.mft_stake_free_seed(&users.farmer1, &token_id_normal, to_yocto("100")).assert_success();
@@ -576,12 +576,12 @@ fn test_mutli_seed_with_booster_and_normal(){
     
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), to_yocto("30"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.wnear), to_yocto("15"));
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth) <= to_yocto("30"));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.ndai) <= to_yocto("15"));
 
@@ -609,15 +609,15 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), to_yocto("45"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.wnear), to_yocto("22.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.nref), to_yocto("15"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.wnear), to_yocto("7.5"));
 
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth) <= to_yocto("45"));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.ndai) <= to_yocto("22.5"));
     assert!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_booster, &tokens.neth) <= to_yocto("15"));
@@ -632,8 +632,8 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.wnear), to_yocto("22.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.wnear), 0);
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("60"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("45"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("60"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("45"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
 
     println!("booster> farmer1 claim_reward_by_seed at : {}", e.current_time());
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.neth), 0);
@@ -645,8 +645,8 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert!(e.get_farmer_reward(&users.farmer1, &tokens.ndai) <= to_yocto("22.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.ndai), 0);
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("60"), farm_id_0_booster_reward_claim, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("45"), farm_id_1_booster_reward_claim, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("60"), farm_id_0_booster_reward_claim, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("45"), farm_id_1_booster_reward_claim, to_yocto("15"), 0, Some(FarmStatus::Running));
 
 
     println!("nomal> farmer1 withdraw all seed at : {}", e.current_time());
@@ -663,15 +663,15 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("90"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("60"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("90"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("60"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.wnear), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.nref), to_yocto("45"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.wnear), to_yocto("22.5"));
 
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("90"), farm_id_0_booster_reward_claim, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("60"), farm_id_1_booster_reward_claim, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("90"), farm_id_0_booster_reward_claim, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("60"), farm_id_1_booster_reward_claim, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.ndai), 0);
     assert!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_booster, &tokens.neth) <= to_yocto("45"));
@@ -699,15 +699,15 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("120"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("75"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("120"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("75"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), to_yocto("15"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.wnear), to_yocto("7.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.nref), to_yocto("60"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.wnear), to_yocto("30"));
 
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("120"), farm_id_0_booster_reward_claim, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("75"), farm_id_1_booster_reward_claim, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("120"), farm_id_0_booster_reward_claim, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("75"), farm_id_1_booster_reward_claim, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth) <= to_yocto("15"));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.ndai) <= to_yocto("7.5"));
     assert!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_booster, &tokens.neth) <= to_yocto("60"));
@@ -767,15 +767,15 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     e.skip_time(DEFAULT_MAX_LOCKING_DURATION_SEC);
     println!(">> time pass {}, now at : {}", to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC), e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("105"), 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("52.5"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("105"), 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("52.5"), to_yocto("15"), 0, Some(FarmStatus::Ended));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), to_yocto("195"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.wnear), to_yocto("82.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.wnear), 0);
 
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("300"), farm_id_0_booster_reward_claim, 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("150"), farm_id_1_booster_reward_claim, to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("300"), farm_id_0_booster_reward_claim, 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("150"), farm_id_1_booster_reward_claim, to_yocto("15"), 0, Some(FarmStatus::Ended));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth) <= to_yocto("195"));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.ndai) <= to_yocto("82.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_booster, &tokens.neth), 0);
@@ -787,8 +787,8 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_normal, to_yocto("50"), to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_normal), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id_normal), &seed_id_normal, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
     assert!(e.get_farmer_seed(&users.farmer1, &seed_id_normal).is_null());
 
     println!("booster> farmer1 unclock and withdraw all seed at : {}, meanwhile claim all reward by seed", e.current_time());
@@ -798,26 +798,26 @@ fn test_mutli_seed_with_booster_and_normal(){
     assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id_booster, to_yocto("50"), to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_booster), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("300"), farm_id_0_booster_reward_claim, 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("150"), farm_id_1_booster_reward_claim, to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("300"), e.current_time(), to_yocto("300"), farm_id_0_booster_reward_claim, 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("150"), farm_id_1_booster_reward_claim, to_yocto("15"), 0, Some(FarmStatus::Ended));
     assert!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).is_null());
 
 
     println!("normal> restarted farm_id_0 at : {}", e.current_time());
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("75"), &farm_id_0_normal).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_normal), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
 
     println!("booster> restarted farm_id_0 at : {}", e.current_time());
     e.deposit_reward(&tokens.neth, &users.operator, to_yocto("75"), &farm_id_0_booster).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("300"), farm_id_0_booster_reward_claim, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("150"), farm_id_1_booster_reward_claim, to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("300"), farm_id_0_booster_reward_claim, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1_booster), to_yocto("150"), e.current_time(), to_yocto("150"), farm_id_1_booster_reward_claim, to_yocto("15"), 0, Some(FarmStatus::Ended));
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("330"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("330"), farm_id_0_booster_reward_claim, to_yocto("30"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("330"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("330"), farm_id_0_booster_reward_claim, to_yocto("30"), 0, Some(FarmStatus::Running));
 
 
     println!("normal> farmer1 and farmer2 stake_free_seed at : {}", e.current_time());
@@ -839,11 +839,11 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("360"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("360"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), to_yocto("20"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.nref), to_yocto("10"));
 
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("360"), farm_id_0_booster_reward_claim, to_yocto("30"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("360"), farm_id_0_booster_reward_claim, to_yocto("30"), 0, Some(FarmStatus::Running));
     assert!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth) <= to_yocto("20"));
     assert!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_booster, &tokens.neth) <= to_yocto("10"));
 
@@ -871,11 +871,11 @@ fn test_mutli_seed_with_booster_and_normal(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}, Insufficient reward, send all", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("375"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_normal), to_yocto("375"), e.current_time(), to_yocto("375"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Ended));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_normal, &tokens.nref), to_yocto("30"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_normal, &tokens.nref), to_yocto("15"));
 
-    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("375"), farm_id_0_booster_reward_claim, to_yocto("30"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0_booster), to_yocto("375"), e.current_time(), to_yocto("375"), farm_id_0_booster_reward_claim, to_yocto("30"), 0, Some(FarmStatus::Ended));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id_booster, &tokens.neth), to_yocto("10"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id_booster, &tokens.neth), to_yocto("5"));
 }
@@ -918,30 +918,30 @@ fn test_booster_seed_mutli_farm(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at + NANOS_PER_DAY), to_yocto("30")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
     assert_farm_info(e.get_farm(&farm_id_0), &farm_id_0, &tokens.nref, to_sec(start_at + NANOS_PER_DAY), to_yocto("30"));
-    assert_farm_detail(e.get_farm(&farm_id_0), 0, start_at + NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0), 0, start_at + NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     e.create_farm(&e.owner, &seed_id, &tokens.wnear, to_sec(start_at), to_yocto("15")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
     assert_farm_info(e.get_farm(&farm_id_1), &farm_id_1, &tokens.wnear, to_sec(start_at), to_yocto("15"));
-    assert_farm_detail(e.get_farm(&farm_id_1), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), 0, e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
-    assert_farm_detail(e.get_farm(&farm_id_1), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, Some(FarmStatus::Pending));
+    assert_farm_detail(e.get_farm(&farm_id_0), 0, e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_1), 0, e.current_time() - NANOS_PER_DAY, 0, 0, 0, 0, Some(FarmStatus::Pending));
 
     
     println!("> deposit_reward at : {}", e.current_time());
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("300"), &farm_id_0).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), 0, 0, 0, 0, Some(FarmStatus::Created));
     
     e.ft_mint(&tokens.wnear, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.wnear, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.wnear, &users.operator, to_yocto("150"), &farm_id_1).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("15"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     
 
     println!("> farmer1 stake_free_seed at : {}", e.current_time());
@@ -952,8 +952,8 @@ fn test_booster_seed_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("30"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("30"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("30"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("15"));
 
@@ -966,8 +966,8 @@ fn test_booster_seed_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), 0, 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), 0, to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("45"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("22.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("15"));
@@ -982,8 +982,8 @@ fn test_booster_seed_mutli_farm(){
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.wnear), to_yocto("22.5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), 0);
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("60"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("45"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
 
 
     println!("> farmer1 withdraw all seed at : {}", e.current_time());
@@ -997,8 +997,8 @@ fn test_booster_seed_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("90"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("60"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("90"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("60"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("45"));
@@ -1013,8 +1013,8 @@ fn test_booster_seed_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("120"), to_yocto("45"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("75"), to_yocto("22.5"), to_yocto("15"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("120"), to_yocto("45"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("75"), to_yocto("22.5"), to_yocto("15"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("10"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("5"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("65"));
@@ -1043,8 +1043,8 @@ fn test_booster_seed_mutli_farm(){
 
     e.skip_time(DEFAULT_MAX_LOCKING_DURATION_SEC);
     println!(">> time pass {}, now at : {}", to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC), e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("110"), 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("55"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("110"), 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("55"), to_yocto("15"), 0, Some(FarmStatus::Ended));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("190"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.wnear), to_yocto("80"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), 0);
@@ -1056,20 +1056,20 @@ fn test_booster_seed_mutli_farm(){
     assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("50")).unwrap_json::<bool>());
     assert_eq!(e.ft_balance_of(&tokens.love_ref, &users.farmer1), to_yocto("100"));
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 2, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Ended));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("300"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
 
 
     println!("> restarted farm_id_0 at : {}", e.current_time());
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("75"), &farm_id_0).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("300"), to_yocto("300"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
 
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("330"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Running));
-    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("330"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_1), to_yocto("150"), e.current_time(), to_yocto("150"), to_yocto("135"), to_yocto("15"), 0, Some(FarmStatus::Ended));
 
 
     println!("> farmer1 and farmer2 stake_free_seed at : {}", e.current_time());
@@ -1083,13 +1083,13 @@ fn test_booster_seed_mutli_farm(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("360"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("360"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("20"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("10"));
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}, Insufficient reward, send all", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("375"), to_yocto("300"), to_yocto("30"), Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id_0), to_yocto("375"), e.current_time(), to_yocto("375"), to_yocto("300"), to_yocto("30"), 0, Some(FarmStatus::Ended));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("30"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("15"));
 
@@ -1145,7 +1145,7 @@ fn test_verify_users_reward_total_amount(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("2"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("2"), 0, 0, 0, Some(FarmStatus::Running));
 
 
     println!("{}", e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref));
@@ -1248,7 +1248,7 @@ fn test_reward_after_start_at(){
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
     println!("> no famer stake, first day reward to beneficiary");
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Pending));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Pending));
 
     println!("> farmer1 mft_stake_free_seed at : {}", e.current_time());
     e.mft_stake_free_seed(&users.farmer1, &token_id, to_yocto("100")).assert_success();
@@ -1262,7 +1262,7 @@ fn test_reward_after_start_at(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Pending));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Pending));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), 0);
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), 0);
 
@@ -1270,13 +1270,13 @@ fn test_reward_after_start_at(){
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at + 4 * NANOS_PER_DAY, to_yocto("40"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at + 4 * NANOS_PER_DAY, to_yocto("40"), 0, 0, 0, Some(FarmStatus::Running));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("20"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("20"));
 
     e.skip_time(to_sec(20 * NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at + 24 * NANOS_PER_DAY, to_yocto("100"), 0, 0, Some(FarmStatus::Ended));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at + 24 * NANOS_PER_DAY, to_yocto("100"), 0, 0, 0, Some(FarmStatus::Ended));
 
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("50"));

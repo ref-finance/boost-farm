@@ -29,13 +29,13 @@ fn test_claim_reward_by_seed(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at), to_yocto("10")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id), &farm_id, &tokens.nref, to_sec(start_at), to_yocto("10"));
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     println!("> deposit_reward at : {}", e.current_time());
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     println!("> farmer1 mft_stake_lock_seed at : {}", e.current_time());
     e.mft_stake_lock_seed(&token_id, &users.farmer1, to_yocto("50"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
@@ -43,7 +43,7 @@ fn test_claim_reward_by_seed(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, 0, 0, Some(FarmStatus::Running));
 
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("10"));
 
@@ -95,13 +95,13 @@ fn test_withdraw_reward(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at), to_yocto("10")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id), &farm_id, &tokens.nref, to_sec(start_at), to_yocto("10"));
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     println!("> deposit_reward at : {}", e.current_time());
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     println!("> farmer1 mft_stake_lock_seed at : {}", e.current_time());
     e.mft_stake_lock_seed(&token_id, &users.farmer1, to_yocto("50"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
@@ -109,7 +109,7 @@ fn test_withdraw_reward(){
 
     e.skip_time(to_sec(NANOS_PER_DAY));
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, 0, Some(FarmStatus::Running));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, 0, 0, Some(FarmStatus::Running));
 
     assert_eq!(e.get_farmer_reward(&users.farmer1, &tokens.nref), 0);
     e.claim_reward_by_seed(&users.farmer1, &seed_id).assert_success();

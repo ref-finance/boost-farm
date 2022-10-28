@@ -45,7 +45,7 @@ fn test_create_farm(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at), to_yocto("10")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id), &farm_id, &tokens.nref, to_sec(start_at), to_yocto("10"));
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     // error scene
     // 1 : E002_NOT_ALLOWED
@@ -114,7 +114,7 @@ fn test_cancle_farm() {
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 
     assert_farm_info(e.get_farm(&farm_id), &farm_id, &tokens.nref, to_sec(start_at), to_yocto("10"));
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     // success
     e.skip_time(to_sec(NANOS_PER_DAY));
@@ -156,7 +156,7 @@ fn test_cancle_farm() {
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
     assert_err!(
         e.cancel_farm(&e.owner, &farm_id),
         E403_FARM_ALREADY_DEPOSIT_REWARD
@@ -183,14 +183,14 @@ fn test_remove_farm_from_seed(){
     e.create_farm(&e.owner, &seed_id, &tokens.nref, to_sec(start_at), to_yocto("10")).assert_success();
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 1, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     assert_farm_info(e.get_farm(&farm_id), &farm_id, &tokens.nref, to_sec(start_at), to_yocto("10"));
-    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), 0, start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
 
     println!("> deposit_reward at : {}", e.current_time());
     e.ft_mint(&tokens.nref, &users.operator, to_yocto("10000"));
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.operator), to_yocto("10000"));
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("10"), &farm_id).assert_success();
-    assert_farm_detail(e.get_farm(&farm_id), to_yocto("10"), start_at, 0, 0, 0, Some(FarmStatus::Created));
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("10"), start_at, 0, 0, 0, 0, Some(FarmStatus::Created));
 
     // error scene
     // 1 : E002_NOT_ALLOWED
