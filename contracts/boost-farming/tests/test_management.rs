@@ -500,6 +500,14 @@ fn test_withdraw_from_beneficiary_account(){
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
     assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), 0, Some(FarmStatus::Running));
 
+    // test if receiver account doesn't register the token
+    assert_eq!(e.ft_balance_of(&tokens.nref,&e.owner), 0);
+    e.withdraw_from_beneficiary_account(&users.bob, &farm_id,  1);
+    assert_eq!(e.ft_balance_of(&tokens.nref,&e.owner), 0);
+
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), 0, Some(FarmStatus::Running));
+
+    //
     e.ft_storage_deposit(&e.owner,&tokens.nref);
     assert_eq!(e.ft_balance_of(&tokens.nref,&e.owner), 0);
     e.withdraw_from_beneficiary_account(&users.bob, &farm_id,  1);
@@ -582,6 +590,14 @@ fn test_withdraw_from_undistributed_reward(){
     println!(">> time pass {}, now at : {}", NANOS_PER_DAY, e.current_time());
     assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), 0, Some(FarmStatus::Running));
 
+    // test if receiver account doesn't register the token
+    assert_eq!(e.ft_balance_of(&tokens.nref,&e.owner), 0);
+    e.withdraw_from_undistributed_reward(&users.bob, &farm_id, to_yocto("10"), 1);
+    assert_eq!(e.ft_balance_of(&tokens.nref,&e.owner), 0);
+
+    assert_farm_detail(e.get_farm(&farm_id), to_yocto("100"), e.current_time(), to_yocto("10"), 0, to_yocto("10"), 0, Some(FarmStatus::Running));    
+
+    //
     e.ft_storage_deposit(&e.owner,&tokens.nref);
     assert_eq!(e.ft_balance_of(&tokens.nref,&e.owner), 0);
     println!("> withdraw part of undistributed reward");
