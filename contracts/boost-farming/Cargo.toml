@@ -1,6 +1,6 @@
 [package]
 name = "boost-farming"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["Marco Sun <sun.dsk1@gmail.com>", "MagicGordon"]
 edition = "2018"
 publish = false

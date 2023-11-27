@@ -100,6 +100,18 @@ pub enum Event<'a> {
         withdraw_amount: &'a U128,
         success: bool,
     },
+    ShadowSeedDeposit {
+        farmer_id: &'a AccountId,
+        seed_id: &'a String,
+        deposit_amount: &'a U128,
+        increased_power: &'a U128,
+        duration: u32,
+    },
+    ShadowSeedWithdraw {
+        farmer_id: &'a AccountId,
+        seed_id: &'a String,
+        withdraw_amount: &'a U128,
+    },
 }
 
 impl Event<'_> {

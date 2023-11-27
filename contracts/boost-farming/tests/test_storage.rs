@@ -74,6 +74,7 @@ fn test_storage(){
     e.mft_mint(&inner_id, &users.bob, to_yocto("100"));
     e.mft_storage_deposit(&token_id, &e.farming_contract.user_account);
     e.mft_stake_free_seed(&users.bob, &token_id, to_yocto("100")).assert_success();
+    println!("{:?}", e.get_farmer_seed(&users.bob, &seed_id));
 
     // 4 : storage_unregister with E104_STILL_HAS_SEED
     assert_err!(
