@@ -248,6 +248,45 @@ impl Contract {
     }
 
     #[payable]
+    pub fn withdraw_from_outdated_beneficiary_account(&mut self, farm_id: FarmId) -> Promise {
+        assert_one_yocto();
+        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
+        require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
+        
+        let v_farm = self.data_mut().outdated_farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
+        let mut seed_farm = match v_farm {
+            VSeedFarm::V0(farm) => {
+                farm.into()
+            }
+            VSeedFarm::Current(farm) => {
+                farm
+            }
+        };
+
+        let amount = seed_farm.amount_of_beneficiary - seed_farm.amount_of_withdrew_beneficiary;
+        require!(amount > 0, E101_INSUFFICIENT_BALANCE);
+        let reward_token = seed_farm.terms.reward_token.clone();
+        seed_farm.amount_of_withdrew_beneficiary = seed_farm.amount_of_beneficiary;
+        self.data_mut().outdated_farms.insert(&farm_id, &seed_farm.into());
+
+        ext_fungible_token::ft_transfer(
+            self.data().owner_id.clone(),
+            amount.into(),
+            None,
+            reward_token,
+            1, // one yocto near
+            GAS_FOR_REWARD_TRANSFER,
+        )
+        .then(ext_self::callback_withdraw_outdated_beneficiary(
+            farm_id.clone(),
+            amount.into(),
+            env::current_account_id(),
+            0,
+            GAS_FOR_RESOLVE_REWARD_TRANSFER,
+        ))
+    }
+
+    #[payable]
     pub fn withdraw_from_undistributed_reward(&mut self, farm_id: FarmId, amount: U128) -> Promise {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
@@ -396,6 +435,43 @@ impl Contract {
             },
             PromiseResult::Successful(_) => {
                 Event::RewardWithdrawBeneficiary {
+                    owner_id: &self.data().owner_id,
+                    farm_id: &farm_id,
+                    withdraw_amount: &U128(amount),
+                    success: true,
+                }
+                .emit();
+            }
+        }
+    }
+
+    #[private]
+    pub fn callback_withdraw_outdated_beneficiary(&mut self, farm_id: FarmId, amount: U128) {
+        require!(
+            env::promise_results_count() == 1,
+            E001_PROMISE_RESULT_COUNT_INVALID
+        );
+        let amount: Balance = amount.into();
+        match env::promise_result(0) {
+            PromiseResult::NotReady => unreachable!(),
+            PromiseResult::Failed => {
+                if let VSeedFarm::Current(mut farm) = self.data_mut().outdated_farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST) {
+                    farm.amount_of_withdrew_beneficiary -= amount;
+                    self.data_mut().outdated_farms.insert(&farm_id, &farm.into());
+                } else {
+                    env::panic_str(E006_NOT_IMPLEMENTED);
+                }
+
+                Event::RewardWithdrawOutdatedBeneficiary {
+                    owner_id: &self.data().owner_id,
+                    farm_id: &farm_id,
+                    withdraw_amount: &U128(amount),
+                    success: false,
+                }
+                .emit();
+            },
+            PromiseResult::Successful(_) => {
+                Event::RewardWithdrawOutdatedBeneficiary {
                     owner_id: &self.data().owner_id,
                     farm_id: &farm_id,
                     withdraw_amount: &U128(amount),
