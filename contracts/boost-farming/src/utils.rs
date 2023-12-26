@@ -144,6 +144,8 @@ pub trait TokenPostActions {
 
     fn callback_withdraw_beneficiary(&mut self, farm_id: FarmId, amount: U128);
 
+    fn callback_withdraw_outdated_beneficiary(&mut self, farm_id: FarmId, amount: U128);
+
     fn callback_withdraw_undistributed(&mut self, farm_id: FarmId, amount: U128);
 }
 

@@ -94,6 +94,12 @@ pub enum Event<'a> {
         withdraw_amount: &'a U128,
         success: bool,
     },
+    RewardWithdrawOutdatedBeneficiary {
+        owner_id: &'a AccountId,
+        farm_id: &'a String,
+        withdraw_amount: &'a U128,
+        success: bool,
+    },
     RewardWithdrawUndistributed {
         owner_id: &'a AccountId,
         farm_id: &'a String,
