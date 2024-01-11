@@ -6,7 +6,7 @@ fn test_update(){
     let e = Env::init_with_contract(previous_boost_farm_wasm_bytes());
     let users = Users::init(&e);
 
-    assert_eq!(e.get_metadata020().version, "0.3.1".to_string());
+    assert_eq!(e.get_metadata020().version, "0.3.2".to_string());
 
     let inner_id = "0".to_string();
     let token_id = format!(":{}", inner_id);
