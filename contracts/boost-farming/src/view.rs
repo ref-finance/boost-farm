@@ -71,9 +71,6 @@ impl Contract {
     pub fn get_outdated_farm(&self, farm_id: FarmId) -> Option<SeedFarm> {
         self.data().outdated_farms.get(&farm_id).map(|vf| {
             match vf {
-                VSeedFarm::V0(farm) => {
-                    farm.into()
-                }
                 VSeedFarm::Current(farm) => {
                     farm
                 }
@@ -139,9 +136,6 @@ impl Contract {
             .values()
             .map(|vf| {
                 match vf {
-                    VSeedFarm::V0(farm) => {
-                        farm.clone().into()
-                    }
                     VSeedFarm::Current(farm) => {
                         farm.clone()
                     }
@@ -155,9 +149,6 @@ impl Contract {
         let seed = self.internal_unwrap_seed(&seed_id);
         seed.farms.get(&farm_id).map(|vf| {
             match vf {
-                VSeedFarm::V0(farm) => {
-                    farm.clone().into()
-                }
                 VSeedFarm::Current(farm) => {
                     farm.clone()
                 }

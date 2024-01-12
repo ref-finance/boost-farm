@@ -15,14 +15,12 @@ pub struct FarmTerms {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Serialize)]
 #[serde(crate = "near_sdk::serde")]
 pub enum VSeedFarm {
-    V0(SeedFarmV0),
     Current(SeedFarm),
 }
 
 impl From<VSeedFarm> for SeedFarm {
     fn from(v: VSeedFarm) -> Self {
         match v {
-            VSeedFarm::V0(c) => c.into(),
             VSeedFarm::Current(c) => c,
         }
     }

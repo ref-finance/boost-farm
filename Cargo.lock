@@ -378,21 +378,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "boost-farming"
-version = "0.3.2"
-dependencies = [
- "mock-ft",
- "mock-mft",
- "near-contract-standards",
- "near-sdk",
- "near-sdk-sim",
- "near-sys 0.1.0",
- "once_cell",
- "rand 0.8.5",
- "uint",
-]
-
-[[package]]
 name = "borsh"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1984,6 +1969,21 @@ name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
+
+[[package]]
+name = "meme-farming"
+version = "0.1.0"
+dependencies = [
+ "mock-ft",
+ "mock-mft",
+ "near-contract-standards",
+ "near-sdk",
+ "near-sdk-sim",
+ "near-sys 0.1.0",
+ "once_cell",
+ "rand 0.8.5",
+ "uint",
+]
 
 [[package]]
 name = "memmap"

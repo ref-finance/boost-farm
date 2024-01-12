@@ -5,6 +5,17 @@ use near_contract_standards::fungible_token::core_impl::ext_fungible_token;
 impl Contract {
 
     #[payable]
+    pub fn modify_delay_withdraw_sec(&mut self, delay_withdraw_sec: DurationSec) {
+        assert_one_yocto();
+        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
+        require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
+        let mut config =  self.data().config.get().unwrap();
+        config.withdraw_delay_sec = delay_withdraw_sec;        
+        config.assert_valid();
+        self.data_mut().config.set(&config);
+    }
+
+    #[payable]
     pub fn modify_daily_reward(&mut self, farm_id: FarmId, daily_reward: U128) {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
@@ -15,9 +26,6 @@ impl Contract {
 
         let vfarm = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
         match vfarm {
-            VSeedFarm::V0(farm) => {
-                farm.terms.daily_reward = daily_reward.0;
-            }
             VSeedFarm::Current(farm) => {
                 farm.terms.daily_reward = daily_reward.0;
             }
@@ -215,9 +223,6 @@ impl Contract {
 
         let v_farm = seed.farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
         let mut seed_farm = match v_farm {
-            VSeedFarm::V0(farm) => {
-                farm.into()
-            }
             VSeedFarm::Current(farm) => {
                 farm
             }
@@ -255,9 +260,6 @@ impl Contract {
         
         let v_farm = self.data_mut().outdated_farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
         let mut seed_farm = match v_farm {
-            VSeedFarm::V0(farm) => {
-                farm.into()
-            }
             VSeedFarm::Current(farm) => {
                 farm
             }
@@ -299,9 +301,6 @@ impl Contract {
 
         let v_farm = seed.farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
         let mut seed_farm = match v_farm {
-            VSeedFarm::V0(farm) => {
-                farm.into()
-            }
             VSeedFarm::Current(farm) => {
                 farm
             }
@@ -418,11 +417,8 @@ impl Contract {
                 // without touching any seed distribution logic to save gas consumption
                 let (seed_id, _) = parse_farm_id(&farm_id);
                 let mut seed: Seed = self.data().seeds.get(&seed_id).map(|v| v.into()).expect(E301_SEED_NOT_EXIST);
-                if let VSeedFarm::Current(farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST) {
-                    farm.amount_of_withdrew_beneficiary -= amount;
-                } else {
-                    env::panic_str(E006_NOT_IMPLEMENTED);
-                }
+                let VSeedFarm::Current(farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+                farm.amount_of_withdrew_beneficiary -= amount;
                 self.data_mut().seeds.insert(&seed_id, &seed.into());
 
                 Event::RewardWithdrawBeneficiary {
@@ -455,13 +451,10 @@ impl Contract {
         match env::promise_result(0) {
             PromiseResult::NotReady => unreachable!(),
             PromiseResult::Failed => {
-                if let VSeedFarm::Current(mut farm) = self.data_mut().outdated_farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST) {
-                    farm.amount_of_withdrew_beneficiary -= amount;
-                    self.data_mut().outdated_farms.insert(&farm_id, &farm.into());
-                } else {
-                    env::panic_str(E006_NOT_IMPLEMENTED);
-                }
-
+                let VSeedFarm::Current(mut farm) = self.data_mut().outdated_farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
+                farm.amount_of_withdrew_beneficiary -= amount;
+                self.data_mut().outdated_farms.insert(&farm_id, &farm.into());
+                
                 Event::RewardWithdrawOutdatedBeneficiary {
                     owner_id: &self.data().owner_id,
                     farm_id: &farm_id,
@@ -496,11 +489,8 @@ impl Contract {
                 // without touching any seed distribution logic to save gas consumption
                 let (seed_id, _) = parse_farm_id(&farm_id);
                 let mut seed: Seed = self.data().seeds.get(&seed_id).map(|v| v.into()).expect(E301_SEED_NOT_EXIST);
-                if let VSeedFarm::Current(farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST) {
-                    farm.total_reward += amount;
-                } else {
-                    env::panic_str(E006_NOT_IMPLEMENTED);
-                }
+                let VSeedFarm::Current(farm) = seed.farms.get_mut(&farm_id).expect(E401_FARM_NOT_EXIST);
+                farm.total_reward += amount;
 
                 self.data_mut().seeds.insert(&seed_id, &seed.into());
 

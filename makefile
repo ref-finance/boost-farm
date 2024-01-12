@@ -2,9 +2,9 @@ RFLAGS="-C link-arg=-s"
 
 build: contracts/boost-farming
 	rustup target add wasm32-unknown-unknown
-	RUSTFLAGS=$(RFLAGS) cargo build -p boost-farming --target wasm32-unknown-unknown --release
+	RUSTFLAGS=$(RFLAGS) cargo build -p meme-farming --target wasm32-unknown-unknown --release
 	mkdir -p res
-	cp target/wasm32-unknown-unknown/release/boost_farming.wasm ./res/boost_farming.wasm
+	cp target/wasm32-unknown-unknown/release/meme_farming.wasm ./res/meme_farming.wasm
 
 unittest: build
 ifdef TC

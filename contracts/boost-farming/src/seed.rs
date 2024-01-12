@@ -49,9 +49,6 @@ impl Seed {
     pub fn update(&mut self) {
         for (_, vfarm) in self.farms.iter_mut() {
             match vfarm {
-                VSeedFarm::V0(farm) => {
-                    farm.update(self.total_seed_power);
-                }
                 VSeedFarm::Current(farm) => {
                     farm.update(self.total_seed_power);
                 }
@@ -63,9 +60,6 @@ impl Seed {
         for (farm_id, amount) in claimed {
             let vfarm = self.farms.get_mut(farm_id).unwrap();
             match vfarm {
-                VSeedFarm::V0(farm) => {
-                    farm.claimed_reward += amount;
-                }
                 VSeedFarm::Current(farm) => {
                     farm.claimed_reward += amount;
                 }

@@ -50,13 +50,29 @@ impl Contract {
         .emit();
     }
 
+
+    pub fn withdraw_seed(&mut self, seed_id: SeedId, amount: Option<U128>) -> Promise {
+        require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
+        let farmer_id = env::predecessor_account_id();
+        let mut farmer = self.internal_unwrap_farmer(&farmer_id);
+        let withdraw_seed = farmer.withdraws.get(&seed_id).unwrap();
+        let withdraw_amount: Balance = if let Some(amount) = amount {
+            amount.into()
+        } else {
+            withdraw_seed.amount
+        };
+        farmer.sub_withdraw_seed(&seed_id, withdraw_amount, self.get_config().withdraw_delay_sec);
+        self.internal_set_farmer(&farmer_id, farmer);
+        self.transfer_seed_token(&farmer_id, &seed_id, withdraw_amount)
+    }
+
     #[payable]
     pub fn unlock_and_withdraw_seed(
         &mut self,
         seed_id: SeedId,
         unlock_amount: U128,
         withdraw_amount: U128,
-    ) -> PromiseOrValue<bool> {
+    ) {
         assert_one_yocto();
         require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
 
@@ -80,12 +96,10 @@ impl Contract {
         } else {
             0
         };
-        let ret: PromiseOrValue<bool> = if withdraw_amount > 0 {
+        if withdraw_amount > 0 {
             farmer_seed.withdraw_free(withdraw_amount);
-            self.transfer_seed_token(&farmer_id, &seed_id, withdraw_amount).into()
-        } else {
-            PromiseOrValue::Value(true)
-        };
+            farmer.add_withdraw_seed(&seed_id, withdraw_amount, env::block_timestamp());
+        }
 
         seed.total_seed_amount -= withdraw_amount;
         seed.total_seed_power = seed.total_seed_power - prev + farmer_seed.get_seed_power();
@@ -111,7 +125,6 @@ impl Contract {
             }
             .emit();
         }
-        ret
     }
 
     #[payable]
@@ -171,12 +184,16 @@ impl Contract {
         match env::promise_result(0) {
             PromiseResult::NotReady => unreachable!(),
             PromiseResult::Failed => {
-                // all seed amount go to lostfound
-                let seed_amount = self.data().seeds_lostfound.get(&seed_id).unwrap_or(0);
-                self.data_mut()
-                    .seeds_lostfound
-                    .insert(&seed_id, &(seed_amount + amount));
-
+                // all seed amount goes back to withdraws
+               if let Some(mut farmer) = self.internal_get_farmer(&sender_id) {
+                    farmer.add_withdraw_seed(&seed_id, amount, env::block_timestamp());
+               } else {
+                    // if inner farmer not exist, goes to lostfound
+                    let seed_amount = self.data().seeds_lostfound.get(&seed_id).unwrap_or(0);
+                    self.data_mut()
+                        .seeds_lostfound
+                        .insert(&seed_id, &(seed_amount + amount));
+               }
                 Event::SeedWithdraw {
                     farmer_id: &sender_id,
                     seed_id: &seed_id,

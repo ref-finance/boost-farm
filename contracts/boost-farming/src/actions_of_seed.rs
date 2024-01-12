@@ -81,9 +81,6 @@ impl Contract {
 
         let v_outdated_farm = seed.farms.remove(&farm_id).expect(E401_FARM_NOT_EXIST);
         let mut outdated_farm = match v_outdated_farm {
-            VSeedFarm::V0(farm) => {
-                farm.into()
-            }
             VSeedFarm::Current(farm) => {
                 farm
             }
@@ -141,9 +138,6 @@ impl Contract {
 
         let vfarm = seed.farms.get_mut(farm_id).expect(E401_FARM_NOT_EXIST);
         let ret = match vfarm {
-            VSeedFarm::V0(farm) => {
-                farm.add_reward(reward_token, amount)
-            }
             VSeedFarm::Current(farm) => {
                 farm.add_reward(reward_token, amount)
             }

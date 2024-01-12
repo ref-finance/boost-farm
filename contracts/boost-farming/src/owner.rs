@@ -152,8 +152,6 @@ impl Contract {
         // see if ContractData need upgrade
         contract.data = 
         match contract.data {
-            VersionedContractData::V0100(data) => VersionedContractData::V0102(data.into()),
-            VersionedContractData::V0101(data) => VersionedContractData::V0102(data.into()),
             VersionedContractData::V0102(data) => VersionedContractData::V0102(data),
         };
         contract

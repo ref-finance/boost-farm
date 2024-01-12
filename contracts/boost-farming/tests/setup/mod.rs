@@ -49,15 +49,16 @@ mod booster;
 pub use booster::*;
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
-    PREV_BOOST_FARMING_WASM_BYTES => "../../releases/boost_farming_025_release.wasm",
-    BOOST_FARMING_WASM_BYTES => "../../res/boost_farming.wasm",
+    PREV_BOOST_FARMING_WASM_BYTES => "../../releases/meme_farming_release.wasm",
+    BOOST_FARMING_WASM_BYTES => "../../res/meme_farming.wasm",
 
     FUNGIBLE_TOKEN_WASM_BYTES => "../../res/mock_ft.wasm",
     MULTI_FUNGIBLE_TOKEN_WASM_BYTES => "../../res/mock_mft.wasm",
 }
 
 pub fn previous_boost_farm_wasm_bytes() -> &'static [u8] {
-    &PREV_BOOST_FARMING_WASM_BYTES
+    // &PREV_BOOST_FARMING_WASM_BYTES
+    &BOOST_FARMING_WASM_BYTES
 }
 
 pub fn boost_farm_wasm_bytes() -> &'static [u8] {
@@ -66,7 +67,7 @@ pub fn boost_farm_wasm_bytes() -> &'static [u8] {
 
 
 pub const NEAR: &str = "near";
-pub const BOOST_FARMING_ID: &str = "boost_farming.near";
+pub const BOOST_FARMING_ID: &str = "meme_farming.near";
 pub const FUNGIBLE_TOKEN_ID: &str = "token.near";
 pub const MULTI_FUNGIBLE_TOKEN_ID: &str = "mutlitoken.near";
 pub const OWNER_ID: &str = "owner.near";
