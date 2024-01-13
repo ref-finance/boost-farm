@@ -10,7 +10,7 @@ impl Contract {
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
         require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
         let mut config =  self.data().config.get().unwrap();
-        config.withdraw_delay_sec = delay_withdraw_sec;        
+        config.delay_withdraw_sec = delay_withdraw_sec;        
         config.assert_valid();
         self.data_mut().config.set(&config);
     }

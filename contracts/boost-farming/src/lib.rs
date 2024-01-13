@@ -65,7 +65,7 @@ pub(crate) enum StorageKeys {
 #[serde(crate = "near_sdk::serde")]
 #[cfg_attr(feature = "test", derive(Deserialize, Clone))]
 pub struct Config {
-    pub withdraw_delay_sec: DurationSec,
+    pub delay_withdraw_sec: DurationSec,
 
     pub seed_slash_rate: u32,
 
@@ -88,7 +88,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            withdraw_delay_sec: 3600_u32 * 24 * 7,
+            delay_withdraw_sec: 3600_u32 * 24 * 7,
             seed_slash_rate: DEFAULT_SEED_SLASH_RATE,
             booster_seeds: HashMap::new(),
             max_num_farms_per_booster: DEFAULT_MAX_NUM_FARMS_PER_BOOSTER,

@@ -223,6 +223,15 @@ impl Contract {
         }
     }
 
+    /// Returns withdraw info of given seed token that ready to withdraw.
+    pub fn get_farmer_withdraw(&self, farmer_id: AccountId, seed_id: SeedId) -> Option<FarmerWithdraw> {
+        if let Some(farmer) = self.internal_get_farmer(&farmer_id) {
+            farmer.withdraws.get(&seed_id).map(|v| v.clone())
+        } else {
+            None
+        }
+    }
+
     pub fn get_farmer_sponsor(&self, farmer_id: AccountId) -> Option<AccountId> {
         if let Some(farmer) = self.internal_get_farmer(&farmer_id) {
             Some(farmer.sponsor_id)

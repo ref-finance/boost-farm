@@ -8,16 +8,16 @@ build: contracts/boost-farming
 
 unittest: build
 ifdef TC
-	RUSTFLAGS=$(RFLAGS) cargo test $(TC) -p boost-farming --lib -- --nocapture
+	RUSTFLAGS=$(RFLAGS) cargo test $(TC) -p meme-farming --lib -- --nocapture
 else
-	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --lib -- --nocapture
+	RUSTFLAGS=$(RFLAGS) cargo test -p meme-farming --lib -- --nocapture
 endif
 
 test: build mock-ft mock-mft
 ifdef TF
-	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --test $(TF) -- --nocapture
+	RUSTFLAGS=$(RFLAGS) cargo test -p meme-farming --test $(TF) -- --nocapture
 else
-	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --tests
+	RUSTFLAGS=$(RFLAGS) cargo test -p meme-farming --tests
 endif
 
 rs-sandbox: build mock-ft mock-mft sandbox-rs
@@ -26,7 +26,7 @@ rs-sandbox: build mock-ft mock-mft sandbox-rs
 release:
 	$(call docker_build,_rust_setup.sh)
 	mkdir -p res
-	cp target/wasm32-unknown-unknown/release/boost_farming.wasm res/boost_farming_release.wasm
+	cp target/wasm32-unknown-unknown/release/meme_farming.wasm res/meme_farming_release.wasm
 
 TEST_FILE ?= **
 LOGS ?=
@@ -52,12 +52,12 @@ clean:
 	rm -rf res/
 
 define docker_build
-	docker build -t my-contract-builder .
+	docker build -t my-meme-farm-builder .
 	docker run \
 		--mount type=bind,source=${PWD},target=/host \
 		--cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
 		-w /host \
 		-e RUSTFLAGS=$(RFLAGS) \
-		-i -t my-contract-builder \
+		-i -t my-meme-farm-builder \
 		/bin/bash $(1)
 endef

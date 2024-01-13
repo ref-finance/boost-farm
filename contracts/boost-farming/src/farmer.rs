@@ -1,14 +1,14 @@
 use crate::*;
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Default)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Default, Clone)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize))]
 #[serde(crate = "near_sdk::serde")]
-pub struct WithdrawSeed {
+pub struct FarmerWithdraw {
     #[serde(with = "u128_dec_format")]
     pub amount: Balance,
     /// user can withdraw after this ts in nanoseconds.
     #[serde(with = "u64_dec_format")]
-    pub unlock_timestamp: u64,
+    pub apply_timestamp: u64,
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize)]
@@ -20,7 +20,7 @@ pub struct Farmer {
     pub sponsor_id: AccountId,
     /// Amounts of various reward tokens the farmer claimed.
     pub rewards: HashMap<AccountId, Balance>,
-    pub withdraws: HashMap<SeedId, WithdrawSeed>,
+    pub withdraws: HashMap<SeedId, FarmerWithdraw>,
     /// Various seed tokens the farmer staked.
     #[serde(skip_serializing)]
     pub seeds: UnorderedMap<SeedId, FarmerSeed>,
@@ -76,14 +76,14 @@ impl Farmer {
         }
     }
 
-    pub fn add_withdraw_seed(&mut self, seed_id: &SeedId, amount: Balance, ts: Timestamp) {
+    pub fn add_withdraw_seed(&mut self, seed_id: &SeedId, amount: Balance) {
         if let Some(mut withdraw_seed) = self.withdraws.get_mut(seed_id) {
             withdraw_seed.amount += amount;
-            withdraw_seed.unlock_timestamp = ts;
+            withdraw_seed.apply_timestamp = env::block_timestamp();
         } else {
-            self.withdraws.insert(seed_id.clone(), WithdrawSeed {
+            self.withdraws.insert(seed_id.clone(), FarmerWithdraw {
                 amount,
-                unlock_timestamp: ts,
+                apply_timestamp: env::block_timestamp(),
             });
         }
     }
@@ -91,12 +91,12 @@ impl Farmer {
     pub fn sub_withdraw_seed(&mut self, seed_id: &SeedId, amount: Balance, lock_duration: DurationSec) {
         if let Some(prev) = self.withdraws.remove(seed_id) {
             require!(amount <= prev.amount, E101_INSUFFICIENT_BALANCE);
-            require!(env::block_timestamp() >= prev.unlock_timestamp + to_nano(lock_duration), E305_STILL_IN_LOCK);
+            require!(env::block_timestamp() >= prev.apply_timestamp + to_nano(lock_duration), E305_STILL_IN_LOCK);
             let remain = prev.amount - amount;
             if remain > 0 {
-                self.withdraws.insert(seed_id.clone(), WithdrawSeed {
+                self.withdraws.insert(seed_id.clone(), FarmerWithdraw {
                     amount: remain,
-                    unlock_timestamp: prev.unlock_timestamp,
+                    apply_timestamp: prev.apply_timestamp,
                 });
             }
         }

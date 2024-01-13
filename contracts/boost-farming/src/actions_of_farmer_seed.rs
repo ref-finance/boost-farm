@@ -61,7 +61,7 @@ impl Contract {
         } else {
             withdraw_seed.amount
         };
-        farmer.sub_withdraw_seed(&seed_id, withdraw_amount, self.get_config().withdraw_delay_sec);
+        farmer.sub_withdraw_seed(&seed_id, withdraw_amount, self.get_config().delay_withdraw_sec);
         self.internal_set_farmer(&farmer_id, farmer);
         self.transfer_seed_token(&farmer_id, &seed_id, withdraw_amount)
     }
@@ -98,7 +98,7 @@ impl Contract {
         };
         if withdraw_amount > 0 {
             farmer_seed.withdraw_free(withdraw_amount);
-            farmer.add_withdraw_seed(&seed_id, withdraw_amount, env::block_timestamp());
+            farmer.add_withdraw_seed(&seed_id, withdraw_amount);
         }
 
         seed.total_seed_amount -= withdraw_amount;
@@ -186,7 +186,8 @@ impl Contract {
             PromiseResult::Failed => {
                 // all seed amount goes back to withdraws
                if let Some(mut farmer) = self.internal_get_farmer(&sender_id) {
-                    farmer.add_withdraw_seed(&seed_id, amount, env::block_timestamp());
+                    farmer.add_withdraw_seed(&seed_id, amount);
+                    self.internal_set_farmer(&sender_id, farmer);
                } else {
                     // if inner farmer not exist, goes to lostfound
                     let seed_amount = self.data().seeds_lostfound.get(&seed_id).unwrap_or(0);

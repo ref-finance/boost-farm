@@ -22,6 +22,23 @@ impl Env {
             )
     }
 
+    pub fn withdraw_seed(
+        &self,
+        operator: &UserAccount,
+        seed_id: &SeedId,
+        amount: Option<u128>,
+    ) -> ExecutionResult {
+        operator
+            .function_call(
+                self.farming_contract.contract.withdraw_seed(
+                    seed_id.clone(),
+                    amount.map(|a| U128(a))
+                ),
+                MAX_GAS.0,
+                0,
+            )
+    }
+
     pub fn unlock_and_withdraw_seed(
         &self,
         operator: &UserAccount,
