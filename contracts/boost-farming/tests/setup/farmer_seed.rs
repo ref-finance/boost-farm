@@ -39,19 +39,19 @@ impl Env {
             )
     }
 
-    pub fn unlock_and_withdraw_seed(
+    pub fn unlock_and_unstake_seed(
         &self,
         operator: &UserAccount,
         seed_id: &SeedId,
         unlock_amount: u128,
-        withdraw_amount: u128,
+        unstake_amount: u128,
     ) -> ExecutionResult {
         operator
             .function_call(
-                self.farming_contract.contract.unlock_and_withdraw_seed(
+                self.farming_contract.contract.unlock_and_unstake_seed(
                     seed_id.clone(),
                     U128(unlock_amount),
-                    U128(withdraw_amount)
+                    U128(unstake_amount)
                 ),
                 MAX_GAS.0,
                 1,

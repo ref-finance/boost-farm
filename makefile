@@ -20,20 +20,11 @@ else
 	RUSTFLAGS=$(RFLAGS) cargo test -p meme-farming --tests
 endif
 
-rs-sandbox: build mock-ft mock-mft sandbox-rs
-	RUSTFLAGS=$(RFLAGS) cargo run -p sandbox-rs --example sand_owner
-
 release:
 	$(call docker_build,_rust_setup.sh)
 	mkdir -p res
 	cp target/wasm32-unknown-unknown/release/meme_farming.wasm res/meme_farming_release.wasm
 
-TEST_FILE ?= **
-LOGS ?=
-sandbox: build mock-ft mock-mft
-	cp res/*.wasm sandbox/compiled-contracts/
-	cd sandbox && \
-	NEAR_PRINT_LOGS=$(LOGS) npx near-workspaces-ava --timeout=5m __tests__/boost-farming/$(TEST_FILE).ava.ts --verbose
 
 mock-ft: contracts/mock-ft
 	rustup target add wasm32-unknown-unknown

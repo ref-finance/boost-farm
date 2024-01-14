@@ -239,9 +239,9 @@ near call $MFT mft_transfer_call '{"receiver_id": "'$FARM'", "token_id": ":0", "
 ```
 
 **Unlock and Withdraw**  
-are unified into one interface `unlock_and_withdraw_seed`:
+are unified into one interface `unlock_and_unstake_seed`:
 ```rust
-pub fn unlock_and_withdraw_seed(
+pub fn unlock_and_unstake_seed(
     &mut self,
     seed_id: SeedId,
     unlock_amount: U128,
@@ -253,7 +253,7 @@ Then check if `withdraw_amount` > 0, do withdraw seed from Free.
 
 Eg:
 ```bash
-near call $FARM unlock_and_withdraw_seed '{"seed_id": "'$MFT'@0", "unlock_amount": "0", "withdraw_amount": "1'$ZERO24'"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
+near call $FARM unlock_and_unstake_seed '{"seed_id": "'$MFT'@0", "unlock_amount": "0", "withdraw_amount": "1'$ZERO24'"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
 ```
 **Free to Lock**  
 Let farmer convert his Free seed to Locking without transfer from outside:

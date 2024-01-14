@@ -84,7 +84,7 @@ fn test_lock_free_seed(){
 }
 
 #[test]
-fn test_unlock_and_withdraw_seed(){
+fn test_unlock_and_unstake_seed(){
     let e = init_env();
     let users = Users::init(&e);
 
@@ -111,19 +111,19 @@ fn test_unlock_and_withdraw_seed(){
     // error scene 
     // 1 : E100_ACC_NOT_REGISTERED
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, to_yocto("100"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer2, &seed_id, to_yocto("100"), to_yocto("100")),
         E100_ACC_NOT_REGISTERED
     );
 
     // 2 : E301_SEED_NOT_EXIST
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &format!("{}#{}", "seed_id", 1), to_yocto("100"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer1, &format!("{}#{}", "seed_id", 1), to_yocto("100"), to_yocto("100")),
         E301_SEED_NOT_EXIST
     );
 
     // 3 : E305_STILL_IN_LOCK
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("100")),
         E305_STILL_IN_LOCK
     );
 
@@ -131,20 +131,20 @@ fn test_unlock_and_withdraw_seed(){
 
     // 4 : E101_INSUFFICIENT_BALANCE
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("150"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("150"), to_yocto("100")),
         E101_INSUFFICIENT_BALANCE
     );
 
     // 5 : E101_INSUFFICIENT_BALANCE
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("150")),
+        e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("150")),
         E101_INSUFFICIENT_BALANCE
     );
 
     // // 6 : ERR_RECEIVER_NOT_REGISTERED
     // e.mft_unregister(&token_id, &users.farmer1);
     // assert_err!(
-    //     e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("25")),
+    //     e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("25")),
     //     "ERR_RECEIVER_NOT_REGISTERED"
     // );
     // e.mft_storage_deposit(&token_id, &users.farmer1);
@@ -152,7 +152,7 @@ fn test_unlock_and_withdraw_seed(){
 
     // success
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("100")).assert_success();
+    e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("100")).assert_success();
     assert!(e.get_farmer_seed(&users.farmer1, &seed_id).is_null());
     // assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("75"));
 }
@@ -183,7 +183,7 @@ fn test_withdraw_seed(){
     assert_user_seed_info(e.get_farmer_seed(&users.farmer1, &seed_id), to_yocto("100"), 0, 0, 0, 0);
 
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
-    e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("100")).assert_success();
+    e.unlock_and_unstake_seed(&users.farmer1, &seed_id, 0, to_yocto("100")).assert_success();
     assert!(e.get_farmer_seed(&users.farmer1, &seed_id).is_null());
 
     // 1 : E305_STILL_IN_LOCK

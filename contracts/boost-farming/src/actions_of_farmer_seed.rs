@@ -67,17 +67,17 @@ impl Contract {
     }
 
     #[payable]
-    pub fn unlock_and_withdraw_seed(
+    pub fn unlock_and_unstake_seed(
         &mut self,
         seed_id: SeedId,
         unlock_amount: U128,
-        withdraw_amount: U128,
+        unstake_amount: U128,
     ) {
         assert_one_yocto();
         require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
 
         let unlock_amount: Balance = unlock_amount.into();
-        let withdraw_amount: Balance = withdraw_amount.into();
+        let unstake_amount: Balance = unstake_amount.into();
 
         let farmer_id = env::predecessor_account_id();
 
@@ -96,12 +96,12 @@ impl Contract {
         } else {
             0
         };
-        if withdraw_amount > 0 {
-            farmer_seed.withdraw_free(withdraw_amount);
-            farmer.add_withdraw_seed(&seed_id, withdraw_amount);
+        if unstake_amount > 0 {
+            farmer_seed.withdraw_free(unstake_amount);
+            farmer.add_withdraw_seed(&seed_id, unstake_amount);
         }
 
-        seed.total_seed_amount -= withdraw_amount;
+        seed.total_seed_amount -= unstake_amount;
         seed.total_seed_power = seed.total_seed_power - prev + farmer_seed.get_seed_power();
 
         if farmer_seed.is_empty() {

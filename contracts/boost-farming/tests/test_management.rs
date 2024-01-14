@@ -431,7 +431,7 @@ fn test_return_seed_lostfound(){
     );
 
     // e.mft_unregister(&token_id, &users.farmer1);
-    // let outcome = e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("100"));
+    // let outcome = e.unlock_and_unstake_seed(&users.farmer1, &seed_id, 0, to_yocto("100"));
     // assert_eq!(false, outcome.unwrap_json::<bool>());
     // assert_err!(
     //     outcome,
