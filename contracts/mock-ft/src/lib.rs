@@ -1,5 +1,5 @@
 use near_contract_standards::fungible_token::metadata::{
-    FungibleTokenMetadata, FungibleTokenMetadataProvider,
+    FungibleTokenMetadata, FungibleTokenMetadataProvider, FT_METADATA_SPEC,
 };
 use near_contract_standards::fungible_token::FungibleToken;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
@@ -64,7 +64,15 @@ near_contract_standards::impl_fungible_token_storage!(Contract, token);
 #[near_bindgen]
 impl FungibleTokenMetadataProvider for Contract {
     fn ft_metadata(&self) -> FungibleTokenMetadata {
-        unimplemented!()
+        FungibleTokenMetadata {
+            spec: FT_METADATA_SPEC.to_string(),
+            name: self.name.clone(),
+            symbol: self.symbol.clone(),
+            icon: self.icon.clone(),
+            reference: None,
+            reference_hash: None,
+            decimals: self.decimals,
+        }
     }
 }
 
