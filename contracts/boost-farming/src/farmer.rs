@@ -6,7 +6,6 @@ use crate::*;
 pub struct FarmerWithdraw {
     #[serde(with = "u128_dec_format")]
     pub amount: Balance,
-    /// user can withdraw after this ts in nanoseconds.
     #[serde(with = "u64_dec_format")]
     pub apply_timestamp: u64,
 }

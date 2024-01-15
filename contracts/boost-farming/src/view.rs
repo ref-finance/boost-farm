@@ -223,6 +223,15 @@ impl Contract {
         }
     }
 
+    pub fn list_farmer_withdraws(&self, farmer_id: AccountId) -> HashMap<SeedId, FarmerWithdraw> {
+        if let Some(farmer) = self.internal_get_farmer(&farmer_id) {
+            farmer.withdraws.into_iter()
+                .collect()
+        } else {
+            HashMap::new()
+        }
+    }
+
     /// Returns withdraw info of given seed token that ready to withdraw.
     pub fn get_farmer_withdraw(&self, farmer_id: AccountId, seed_id: SeedId) -> Option<FarmerWithdraw> {
         if let Some(farmer) = self.internal_get_farmer(&farmer_id) {
