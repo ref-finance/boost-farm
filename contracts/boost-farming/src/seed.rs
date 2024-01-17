@@ -23,6 +23,7 @@ pub struct Seed {
     pub slash_rate: u32,
     /// if min_lock_duration == 0, means forbid locking
     pub min_locking_duration_sec: DurationSec,
+    pub farmer_count: u32,
 }
 
 #[derive(BorshSerialize, BorshDeserialize)]
@@ -84,6 +85,7 @@ impl Seed {
             min_deposit,
             slash_rate: default_slash_rate,
             min_locking_duration_sec,
+            farmer_count: 0,
         }
     }
 }

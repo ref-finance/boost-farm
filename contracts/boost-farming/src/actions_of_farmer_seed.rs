@@ -106,6 +106,9 @@ impl Contract {
 
         if farmer_seed.is_empty() {
             farmer.seeds.remove(&seed_id);
+            if seed.farmer_count > 0 {
+                seed.farmer_count -= 1;
+            }
         } else {
             farmer.seeds.insert(&seed_id, &farmer_seed);
         }

@@ -96,7 +96,7 @@ fn test_free(){
     println!("> farmer1 stake_free_seed at : {}", e.current_time());
     e.mft_stake_free_seed(&users.farmer1, &token_id, to_yocto("100")).assert_success();
     assert_user_seed_info(e.get_farmer_seed(&users.farmer1, &seed_id), to_yocto("100"), 0, 0, 0, 0);
-
+    assert_seed_farmer_count(e.get_seed(&seed_id), 1);
 }
 
 #[test]
@@ -165,6 +165,7 @@ fn test_lock(){
     println!("> farmer1 stake_lock_seed at : {}", e.current_time());
     e.mft_stake_lock_seed(&token_id, &users.farmer1, to_yocto("50"), DEFAULT_MAX_LOCKING_DURATION_SEC / 2).assert_success();
     assert_user_seed_info(e.get_farmer_seed(&users.farmer1, &seed_id), 0, to_yocto("50"), to_yocto("75"), e.current_time() + to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC / 2), DEFAULT_MAX_LOCKING_DURATION_SEC / 2);
+    assert_seed_farmer_count(e.get_seed(&seed_id), 1);
 
     // 6 : E304_CAUSE_PRE_UNLOCK
     assert_err!(
@@ -175,4 +176,5 @@ fn test_lock(){
     // append success
     e.mft_stake_lock_seed(&token_id, &users.farmer1, to_yocto("50"), DEFAULT_MAX_LOCKING_DURATION_SEC);
     assert_user_seed_info(e.get_farmer_seed(&users.farmer1, &seed_id), 0, to_yocto("100"), to_yocto("200"), e.current_time() + to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC), DEFAULT_MAX_LOCKING_DURATION_SEC);
+    assert_seed_farmer_count(e.get_seed(&seed_id), 1);
 }

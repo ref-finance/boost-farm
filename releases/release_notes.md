@@ -1,7 +1,7 @@
 # Release Notes
 
-Version 0.1.0
+Version 0.1.1
 ```
-9a42vBCpqZwCPX8Z5owGTgy3VhvpabVQbRWUUMWUFzWt
+5WWFgC8VxjQDYxKUpn1xeYZHLhQAwZTrRc7V7QPJSutV
 ```
 1. delay withdraw of seed token

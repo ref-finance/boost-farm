@@ -44,6 +44,8 @@ pub struct Seed {
     pub slash_rate: u32,
     /// if min_lock_duration == 0, means forbid locking
     pub min_locking_duration_sec: DurationSec,
+    /// the active farmers count 
+    pub farmer_count: u32,
 }
 ```
 **Compute APY**:  
