@@ -61,8 +61,7 @@ impl Contract {
         let log_bases = self.internal_config().get_boosters_from_seed(seed_id);
         for (booster, booster_decimal, log_base) in &log_bases {
             let booster_balance = farmer
-                .seeds
-                .get(booster)
+                .get_seed(booster)
                 .map(|v| v.get_basic_seed_power())
                 .unwrap_or(0_u128);
             if booster_balance > 0 && log_base > &0 {
@@ -84,7 +83,7 @@ impl Contract {
         if let Some(booster_info) = self.internal_config().get_affected_seeds_from_booster(booster_id) {
             for seed_id in booster_info.affected_seeds.keys() {
                 // here we got each affected seed_id, then if the farmer has those seeds, should be updated on by one
-                if farmer.seeds.get(seed_id).is_some() {
+                if farmer.get_seed(seed_id).is_some() {
                     // first claim that farmer's current reward and update boost_ratios for the seed
                     let mut seed = self.internal_unwrap_seed(seed_id);
                     self.internal_do_farmer_claim(farmer, &mut seed);

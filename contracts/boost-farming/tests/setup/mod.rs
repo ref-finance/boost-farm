@@ -49,7 +49,7 @@ mod booster;
 pub use booster::*;
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
-    PREV_BOOST_FARMING_WASM_BYTES => "../../releases/boost_farming_025_release.wasm",
+    PREV_BOOST_FARMING_WASM_BYTES => "../../releases/boost_farming_032_release.wasm",
     BOOST_FARMING_WASM_BYTES => "../../res/boost_farming.wasm",
 
     FUNGIBLE_TOKEN_WASM_BYTES => "../../res/mock_ft.wasm",
@@ -124,7 +124,8 @@ impl Env {
             deposit: to_yocto("20"),
             gas: DEFAULT_GAS.0,
             init_method: new(
-                owner.account_id()
+                owner.account_id(),
+                AccountId::new_unchecked("ref_exchange".to_string())
             )
         );
 

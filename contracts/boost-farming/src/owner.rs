@@ -152,9 +152,10 @@ impl Contract {
         // see if ContractData need upgrade
         contract.data = 
         match contract.data {
-            VersionedContractData::V0100(data) => VersionedContractData::V0102(data.into()),
-            VersionedContractData::V0101(data) => VersionedContractData::V0102(data.into()),
-            VersionedContractData::V0102(data) => VersionedContractData::V0102(data),
+            VersionedContractData::V0100(data) => VersionedContractData::V0103(data.into()),
+            VersionedContractData::V0101(data) => VersionedContractData::V0103(data.into()),
+            VersionedContractData::V0102(data) => VersionedContractData::V0103(data.into()),
+            VersionedContractData::V0103(data) => VersionedContractData::V0103(data),
         };
         contract
     }
@@ -247,7 +248,7 @@ mod owner_tests {
     fn setup_contract() -> (VMContextBuilder, Contract) {
         let mut context = VMContextBuilder::new();
         testing_env!(context.predecessor_account_id(accounts(0)).build());
-        let contract = Contract::new(accounts(0));
+        let contract = Contract::new(accounts(0), AccountId::new_unchecked("ref_exchange".to_string()));
         (context, contract)
     }
 
