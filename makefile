@@ -2,38 +2,29 @@ RFLAGS="-C link-arg=-s"
 
 build: contracts/boost-farming
 	rustup target add wasm32-unknown-unknown
-	RUSTFLAGS=$(RFLAGS) cargo build -p boost-farming --target wasm32-unknown-unknown --release
+	RUSTFLAGS=$(RFLAGS) cargo build -p meme-farming --target wasm32-unknown-unknown --release
 	mkdir -p res
-	cp target/wasm32-unknown-unknown/release/boost_farming.wasm ./res/boost_farming.wasm
+	cp target/wasm32-unknown-unknown/release/meme_farming.wasm ./res/meme_farming.wasm
 
 unittest: build
 ifdef TC
-	RUSTFLAGS=$(RFLAGS) cargo test $(TC) -p boost-farming --lib -- --nocapture
+	RUSTFLAGS=$(RFLAGS) cargo test $(TC) -p meme-farming --lib -- --nocapture
 else
-	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --lib -- --nocapture
+	RUSTFLAGS=$(RFLAGS) cargo test -p meme-farming --lib -- --nocapture
 endif
 
 test: build mock-ft mock-mft
 ifdef TF
-	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --test $(TF) -- --nocapture
+	RUSTFLAGS=$(RFLAGS) cargo test -p meme-farming --test $(TF) -- --nocapture
 else
-	RUSTFLAGS=$(RFLAGS) cargo test -p boost-farming --tests
+	RUSTFLAGS=$(RFLAGS) cargo test -p meme-farming --tests
 endif
-
-rs-sandbox: build mock-ft mock-mft sandbox-rs
-	RUSTFLAGS=$(RFLAGS) cargo run -p sandbox-rs --example sand_owner
 
 release:
 	$(call docker_build,_rust_setup.sh)
 	mkdir -p res
-	cp target/wasm32-unknown-unknown/release/boost_farming.wasm res/boost_farming_release.wasm
+	cp target/wasm32-unknown-unknown/release/meme_farming.wasm res/meme_farming_release.wasm
 
-TEST_FILE ?= **
-LOGS ?=
-sandbox: build mock-ft mock-mft
-	cp res/*.wasm sandbox/compiled-contracts/
-	cd sandbox && \
-	NEAR_PRINT_LOGS=$(LOGS) npx near-workspaces-ava --timeout=5m __tests__/boost-farming/$(TEST_FILE).ava.ts --verbose
 
 mock-ft: contracts/mock-ft
 	rustup target add wasm32-unknown-unknown
@@ -52,12 +43,12 @@ clean:
 	rm -rf res/
 
 define docker_build
-	docker build -t my-contract-builder .
+	docker build -t meme-farm-builder .
 	docker run \
 		--mount type=bind,source=${PWD},target=/host \
 		--cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
 		-w /host \
 		-e RUSTFLAGS=$(RFLAGS) \
-		-i -t my-contract-builder \
+		-i -t meme-farm-builder \
 		/bin/bash $(1)
 endef

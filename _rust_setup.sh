@@ -3,4 +3,4 @@ VER=2021-11-01
 rustup toolchain install stable-$VER
 rustup default stable-$VER
 rustup target add wasm32-unknown-unknown
-cargo build -p boost-farming --target wasm32-unknown-unknown --release
+cargo build -p meme-farming --target wasm32-unknown-unknown --release

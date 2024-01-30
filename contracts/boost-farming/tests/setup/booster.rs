@@ -7,7 +7,7 @@ impl Env {
         booster_id: &SeedId, 
         booster_info: &BoosterInfo
     ) -> ExecutionResult {
-        let booster_info = boost_farming::BoosterInfo{
+        let booster_info = meme_farming::BoosterInfo{
             booster_decimal: booster_info.booster_decimal,
             affected_seeds: booster_info.affected_seeds.clone(),
         };

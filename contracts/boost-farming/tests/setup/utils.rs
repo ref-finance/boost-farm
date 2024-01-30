@@ -17,6 +17,10 @@ pub fn assert_seed(seed: Value, seed_id: &SeedId, seed_decimal: u32, next_index:
     assert_eq!(json!(min_locking_duration_sec), *seed.get("min_locking_duration_sec").unwrap());
 }
 
+pub fn assert_seed_farmer_count(seed: Value, farmer_count: u32) {
+    assert_eq!(json!(farmer_count), *seed.get("farmer_count").unwrap());
+}
+
 pub fn assert_farm_info(seed_farm: SeedFarm, farm_id: &FarmId, reward_token: &UserAccount, start_at: u32, daily_reward: Balance) {
     assert_eq!(seed_farm.farm_id, farm_id.clone());
     assert_eq!(seed_farm.terms.reward_token, reward_token.account_id());

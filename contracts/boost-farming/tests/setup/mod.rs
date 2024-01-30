@@ -8,12 +8,12 @@ pub use near_sdk_sim::{
 };
 
 use mock_mft::ContractContract as MockMultiFungibleToken;
-pub use boost_farming::{ContractContract as FarmingContract,
+pub use meme_farming::{ContractContract as FarmingContract,
     MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, NANOS_PER_DAY, DEFAULT_MAX_LOCKING_DURATION_SEC, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC, DEFAULT_MAX_LOCKING_REWARD_RATIO, MIN_LOCKING_REWARD_RATIO, DEFAULT_MAX_NUM_FARMS_PER_SEED, BP_DENOM, MAX_NUM_SEEDS_PER_BOOSTER,
     Seed, SeedFarm, SeedId, FarmId, FarmTerms, FarmStatus, FarmerSeed, RunningState, ImportFarmerInfo, ImportSeedInfo
 };
 
-pub use boost_farming::{
+pub use meme_farming::{
     E000_ALREADY_INIT, E001_PROMISE_RESULT_COUNT_INVALID, E002_NOT_ALLOWED, E003_NOT_INIT, E004_CONTRACT_PAUSED, E005_NOT_ALLOWED_ON_CUR_STATE, E006_NOT_IMPLEMENTED, E007_INVALID_OPERATOR,
     E100_ACC_NOT_REGISTERED, E101_INSUFFICIENT_BALANCE, E102_INSUFFICIENT_STORAGE, E103_STILL_HAS_REWARD, E104_STILL_HAS_SEED,
     E200_INVALID_RATIO, E201_INVALID_DURATION, E202_FORBID_SELF_BOOST, E203_EXCEED_FARM_NUM_IN_BOOST, E204_EXCEED_SEED_NUM_IN_BOOSTER, E205_INVALID_SLASH_RATE,
@@ -49,15 +49,16 @@ mod booster;
 pub use booster::*;
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
-    PREV_BOOST_FARMING_WASM_BYTES => "../../releases/boost_farming_032_release.wasm",
-    BOOST_FARMING_WASM_BYTES => "../../res/boost_farming.wasm",
+    PREV_BOOST_FARMING_WASM_BYTES => "../../releases/meme_farming_release.wasm",
+    BOOST_FARMING_WASM_BYTES => "../../res/meme_farming.wasm",
 
     FUNGIBLE_TOKEN_WASM_BYTES => "../../res/mock_ft.wasm",
     MULTI_FUNGIBLE_TOKEN_WASM_BYTES => "../../res/mock_mft.wasm",
 }
 
 pub fn previous_boost_farm_wasm_bytes() -> &'static [u8] {
-    &PREV_BOOST_FARMING_WASM_BYTES
+    // &PREV_BOOST_FARMING_WASM_BYTES
+    &BOOST_FARMING_WASM_BYTES
 }
 
 pub fn boost_farm_wasm_bytes() -> &'static [u8] {
@@ -66,7 +67,7 @@ pub fn boost_farm_wasm_bytes() -> &'static [u8] {
 
 
 pub const NEAR: &str = "near";
-pub const BOOST_FARMING_ID: &str = "boost_farming.near";
+pub const BOOST_FARMING_ID: &str = "meme_farming.near";
 pub const FUNGIBLE_TOKEN_ID: &str = "token.near";
 pub const MULTI_FUNGIBLE_TOKEN_ID: &str = "mutlitoken.near";
 pub const OWNER_ID: &str = "owner.near";
@@ -124,8 +125,7 @@ impl Env {
             deposit: to_yocto("20"),
             gas: DEFAULT_GAS.0,
             init_method: new(
-                owner.account_id(),
-                AccountId::new_unchecked("ref_exchange".to_string())
+                owner.account_id()
             )
         );
 

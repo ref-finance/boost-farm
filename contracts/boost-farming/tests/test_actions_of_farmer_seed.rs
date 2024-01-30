@@ -84,7 +84,7 @@ fn test_lock_free_seed(){
 }
 
 #[test]
-fn test_unlock_and_withdraw_seed(){
+fn test_unlock_and_unstake_seed(){
     let e = init_env();
     let users = Users::init(&e);
 
@@ -111,19 +111,19 @@ fn test_unlock_and_withdraw_seed(){
     // error scene 
     // 1 : E100_ACC_NOT_REGISTERED
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer2, &seed_id, to_yocto("100"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer2, &seed_id, to_yocto("100"), to_yocto("100")),
         E100_ACC_NOT_REGISTERED
     );
 
     // 2 : E301_SEED_NOT_EXIST
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &format!("{}#{}", "seed_id", 1), to_yocto("100"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer1, &format!("{}#{}", "seed_id", 1), to_yocto("100"), to_yocto("100")),
         E301_SEED_NOT_EXIST
     );
 
     // 3 : E305_STILL_IN_LOCK
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("100")),
         E305_STILL_IN_LOCK
     );
 
@@ -131,30 +131,106 @@ fn test_unlock_and_withdraw_seed(){
 
     // 4 : E101_INSUFFICIENT_BALANCE
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("150"), to_yocto("100")),
+        e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("150"), to_yocto("100")),
         E101_INSUFFICIENT_BALANCE
     );
 
     // 5 : E101_INSUFFICIENT_BALANCE
     assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("150")),
+        e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("150")),
         E101_INSUFFICIENT_BALANCE
     );
 
-    // 6 : ERR_RECEIVER_NOT_REGISTERED
-    e.mft_unregister(&token_id, &users.farmer1);
-    assert_err!(
-        e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("25")),
-        "ERR_RECEIVER_NOT_REGISTERED"
-    );
-    e.mft_storage_deposit(&token_id, &users.farmer1);
-    assert_eq!(e.list_lostfound().get(&seed_id).unwrap().0, to_yocto("25"));
+    // // 6 : ERR_RECEIVER_NOT_REGISTERED
+    // e.mft_unregister(&token_id, &users.farmer1);
+    // assert_err!(
+    //     e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("25")),
+    //     "ERR_RECEIVER_NOT_REGISTERED"
+    // );
+    // e.mft_storage_deposit(&token_id, &users.farmer1);
+    // assert_eq!(e.list_lostfound().get(&seed_id).unwrap().0, to_yocto("25"));
 
     // success
     assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
-    assert_eq!(true, e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("75")).unwrap_json::<bool>());
+    e.unlock_and_unstake_seed(&users.farmer1, &seed_id, to_yocto("100"), to_yocto("100")).assert_success();
     assert!(e.get_farmer_seed(&users.farmer1, &seed_id).is_null());
-    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("75"));
+    assert_seed_farmer_count(e.get_seed(&seed_id), 0);
+    // assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("75"));
+}
+
+#[test]
+fn test_withdraw_seed(){
+    let e = init_env();
+    let users = Users::init(&e);
+
+    let inner_id = "0".to_string();
+    let token_id = format!(":{}", inner_id);
+    let seed_id = e.mft_seed_id(&inner_id);
+
+    println!("> create_seed at : {}", e.current_time());
+    e.create_seed(&e.owner, &seed_id, TOKEN_DECIMALS as u32, None, None).assert_success();
+    assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
+
+    println!("> farmer1 mint mft at : {}", e.current_time());
+    e.mft_mint(&inner_id, &users.farmer1, to_yocto("100"));
+    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
+    e.storage_deposit_self_to_farming(&users.farmer1).assert_success();
+
+    println!("> farming register mft at : {}", e.current_time());
+    e.mft_storage_deposit(&token_id, &e.farming_contract.user_account);
+
+    println!("> farmer1 mft_stake_lock_seed at : {}", e.current_time());
+    e.mft_stake_free_seed(&users.farmer1, &token_id, to_yocto("100")).assert_success();
+    assert_user_seed_info(e.get_farmer_seed(&users.farmer1, &seed_id), to_yocto("100"), 0, 0, 0, 0);
+
+    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
+    e.unlock_and_unstake_seed(&users.farmer1, &seed_id, 0, to_yocto("100")).assert_success();
+    assert!(e.get_farmer_seed(&users.farmer1, &seed_id).is_null());
+
+    // 1 : E305_STILL_IN_LOCK
+    assert_err!(
+        e.withdraw_seed(&users.farmer1, &seed_id, Some(to_yocto("30"))),
+        E305_STILL_IN_LOCK
+    );
+
+    // 2 : E305_STILL_IN_LOCK
+    assert_err!(
+        e.withdraw_seed(&users.farmer1, &seed_id, None),
+        E305_STILL_IN_LOCK
+    );
+
+    // pass 1 day
+    e.skip_time(3600 * 24 + 1);
+    // 3 : E305_STILL_IN_LOCK
+    assert_err!(
+        e.withdraw_seed(&users.farmer1, &seed_id, Some(to_yocto("30"))),
+        E305_STILL_IN_LOCK
+    );
+
+    // pass another 6 days
+    e.skip_time(3600 * 24 * 6 + 1);
+    // 4 : ERR_RECEIVER_NOT_REGISTERED
+    e.mft_unregister(&token_id, &users.farmer1);
+    assert_err!(
+        e.withdraw_seed(&users.farmer1, &seed_id, Some(to_yocto("30"))),
+        "ERR_RECEIVER_NOT_REGISTERED"
+    );
+    e.mft_storage_deposit(&token_id, &users.farmer1);
+    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
+
+    // 5 : E305_STILL_IN_LOCK
+    assert_err!(
+        e.withdraw_seed(&users.farmer1, &seed_id, Some(to_yocto("30"))),
+        E305_STILL_IN_LOCK
+    );
+
+    // 6 : pass another 7 days
+    e.skip_time(3600 * 24 * 7 + 1);
+    e.withdraw_seed(&users.farmer1, &seed_id, Some(to_yocto("30"))).assert_success();
+    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("30"));
+
+    e.withdraw_seed(&users.farmer1, &seed_id, None).assert_success();
+    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
 }
 
 #[test]

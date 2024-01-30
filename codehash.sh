@@ -1,8 +1,8 @@
 #/bin/bash
 pushd $(dirname $0) > /dev/null
 
-ORIG=releases/boost_farming_release.wasm
-DEST=res/boost_farming_release.wasm
+ORIG=releases/meme_farming_release.wasm
+DEST=res/meme_farming_release.wasm
 
 echo "aaa" | openssl dgst -sha256 -binary > /dev/null 2>&1
 C1=$?

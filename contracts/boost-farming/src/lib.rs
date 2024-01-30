@@ -17,7 +17,6 @@ mod management;
 mod owner;
 mod seed;
 mod seed_farm;
-mod shadow_actions;
 mod storage_impl;
 mod token_receiver;
 mod utils;
@@ -33,7 +32,6 @@ pub use crate::legacy::*;
 pub use crate::owner::{ImportFarmerInfo, ImportSeedInfo};
 pub use crate::seed::*;
 pub use crate::seed_farm::*;
-pub use crate::shadow_actions::*;
 pub use crate::utils::*;
 
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
@@ -60,7 +58,6 @@ pub(crate) enum StorageKeys {
     OutdatedFarm,
     SeedSlashed,
     SeedLostfound,
-    VFarmerSeed { account_id: AccountId },
 }
 
 /// Contract config
@@ -68,6 +65,8 @@ pub(crate) enum StorageKeys {
 #[serde(crate = "near_sdk::serde")]
 #[cfg_attr(feature = "test", derive(Deserialize, Clone))]
 pub struct Config {
+    pub delay_withdraw_sec: DurationSec,
+
     pub seed_slash_rate: u32,
 
     /// Key is boosterID, support multiple booster
@@ -89,6 +88,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
+            delay_withdraw_sec: 3600_u32 * 24 * 7,
             seed_slash_rate: DEFAULT_SEED_SLASH_RATE,
             booster_seeds: HashMap::new(),
             max_num_farms_per_booster: DEFAULT_MAX_NUM_FARMS_PER_BOOSTER,
@@ -133,7 +133,6 @@ pub struct ContractData {
     pub owner_id: AccountId,
     pub next_owner_id: Option<AccountId>,
     pub next_owner_accept_deadline: Option<u64>,
-    pub ref_exchange_id: AccountId,
     pub state: RunningState,
     pub operators: UnorderedSet<AccountId>,
     pub config: LazyOption<Config>,
@@ -153,10 +152,7 @@ pub struct ContractData {
 /// Versioned contract data. Allows to easily upgrade contracts.
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VersionedContractData {
-    V0100(ContractDataV0100),
-    V0101(ContractDataV0101),
-    V0102(ContractDataV0102),
-    V0103(ContractData),
+    V0102(ContractData),
 }
 
 #[near_bindgen]
@@ -168,14 +164,13 @@ pub struct Contract {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(owner_id: AccountId, ref_exchange_id: AccountId) -> Self {
+    pub fn new(owner_id: AccountId) -> Self {
         require!(!env::state_exists(), E000_ALREADY_INIT);
         Self {
-            data: VersionedContractData::V0103(ContractData {
+            data: VersionedContractData::V0102(ContractData {
                 owner_id: owner_id.into(),
                 next_owner_id: None,
                 next_owner_accept_deadline: None,
-                ref_exchange_id,
                 state: RunningState::Running,
                 operators: UnorderedSet::new(StorageKeys::Operator),
                 config: LazyOption::new(StorageKeys::Config, Some(&Config::default())),
@@ -198,15 +193,15 @@ impl Contract {
 
     fn data(&self) -> &ContractData {
         match &self.data {
-            VersionedContractData::V0103(data) => data,
-            _ => unimplemented!(),
+            VersionedContractData::V0102(data) => data,
+            // _ => unimplemented!(),
         }
     }
 
     fn data_mut(&mut self) -> &mut ContractData {
         match &mut self.data {
-            VersionedContractData::V0103(data) => data,
-            _ => unimplemented!(),
+            VersionedContractData::V0102(data) => data,
+            // _ => unimplemented!(),
         }
     }
 
@@ -216,37 +211,5 @@ impl Contract {
                 .data()
                 .operators
                 .contains(&env::predecessor_account_id())
-    }
-}
-
-
-#[cfg(test)]
-mod unit_env {
-    use crate::token_receiver::MFTTokenReceiver;
-
-    use super::*;
-    use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
-    use near_contract_standards::storage_management::StorageManagement;
-    use near_sdk::{json_types::U128, test_utils::accounts};
-    use near_sdk::test_utils::VMContextBuilder;
-    pub use near_sdk::{testing_env, serde_json, AccountId, Balance};
-
-    pub fn d(value: Balance, decimals: u8) -> Balance {
-        value * 10u128.pow(decimals as _)
-    }
-
-    #[test]
-    fn aa() {
-        let mut context = VMContextBuilder::new();
-        testing_env!(context.predecessor_account_id(accounts(0)).build());
-        let mut contract = Contract::new(accounts(0), accounts(1));
-
-        testing_env!(context.predecessor_account_id(accounts(1)).attached_deposit(d(1, 24)).build());
-        contract.storage_deposit(None, None);
-        testing_env!(context.predecessor_account_id(accounts(0)).attached_deposit(1).build());
-        contract.create_seed("ex@0".to_string(), 18, Some(0.into()), None);
-        testing_env!(context.predecessor_account_id("ex".to_string().parse().unwrap()).attached_deposit(d(1, 24)).build());
-        contract.mft_on_transfer(":0".to_string(), accounts(1), 1000.into(), "\"Free\"".to_string());
-        println!("{:?}", contract.get_farmer_seed(accounts(1), "ex@0".to_string()));
     }
 }

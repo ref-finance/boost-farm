@@ -6,8 +6,6 @@ use crate::*;
 pub struct FarmerSeed {
     #[serde(with = "u128_dec_format")]
     pub free_amount: Balance,
-    #[serde(with = "u128_dec_format")]
-    pub shadow_amount: Balance,
     /// The amount of locked token.
     #[serde(with = "u128_dec_format")]
     pub locked_amount: Balance,
@@ -21,27 +19,8 @@ pub struct FarmerSeed {
     pub duration_sec: u32,
     /// <booster_id, booster-ratio>
     pub boost_ratios: HashMap<SeedId, f64>,
-    #[serde(skip)]
+    #[serde(skip_serializing)]
     pub user_rps: HashMap<FarmId, BigDecimal>,
-}
-
-#[derive(BorshSerialize, BorshDeserialize)]
-pub enum VFarmerSeed {
-    Current(FarmerSeed),
-}
-
-impl From<VFarmerSeed> for FarmerSeed {
-    fn from(v: VFarmerSeed) -> Self {
-        match v {
-            VFarmerSeed::Current(c) => c,
-        }
-    }
-}
-
-impl From<FarmerSeed> for VFarmerSeed {
-    fn from(c: FarmerSeed) -> Self {
-        VFarmerSeed::Current(c)
-    }
 }
 
 impl FarmerSeed {
@@ -52,11 +31,11 @@ impl FarmerSeed {
     }
 
     pub fn get_basic_seed_power(&self) -> Balance {
-        self.free_amount + self.shadow_amount + self.x_locked_amount
+        self.free_amount + self.x_locked_amount
     }
 
     pub fn is_empty(&self) -> bool {
-        self.free_amount + self.shadow_amount + self.locked_amount == 0
+        self.free_amount + self.locked_amount == 0
     }
 
     pub fn add_free(&mut self, amount: Balance) -> Balance {
@@ -69,19 +48,6 @@ impl FarmerSeed {
         require!(amount <= self.free_amount, E101_INSUFFICIENT_BALANCE);
         let prev = self.get_seed_power();
         self.free_amount -= amount;
-        prev - self.get_seed_power()
-    }
-
-    pub fn add_shadow(&mut self, amount: Balance) -> Balance {
-        let prev = self.get_seed_power();
-        self.shadow_amount += amount;
-        self.get_seed_power() - prev
-    }
-
-    pub fn withdraw_shadow(&mut self, amount: Balance) -> Balance {
-        require!(amount <= self.shadow_amount, E101_INSUFFICIENT_BALANCE);
-        let prev = self.get_seed_power();
-        self.shadow_amount -= amount;
         prev - self.get_seed_power()
     }
 

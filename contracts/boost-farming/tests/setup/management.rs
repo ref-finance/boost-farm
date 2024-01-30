@@ -4,6 +4,20 @@ use near_sdk::json_types::U128;
 
 impl Env {
 
+    pub fn modify_delay_withdraw_sec(
+        &self,
+        operator: &UserAccount,
+        delay_withdraw_sec: u32,
+        deposit: u128
+    ) -> ExecutionResult {
+        operator
+        .function_call(
+            self.farming_contract.contract.modify_delay_withdraw_sec(delay_withdraw_sec),
+            MAX_GAS.0,
+            deposit,
+        )
+    }
+
     pub fn modify_daily_reward(
         &self,
         operator: &UserAccount,

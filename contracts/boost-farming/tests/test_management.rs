@@ -2,6 +2,32 @@ mod setup;
 use crate::setup::*;
 
 #[test]
+fn test_modify_delay_withdraw_sec(){
+    let e = init_env();
+    let users = Users::init(&e);
+    
+    // error scene 
+    // 1 : Requires attached deposit of exactly 1 yoctoNEAR
+    assert_err!(
+        e.modify_delay_withdraw_sec(&users.bob, 3600, 0),
+        "Requires attached deposit of exactly 1 yoctoNEAR"
+    );
+
+    // 2 : E002_NOT_ALLOWED  
+    assert_err!(
+        e.modify_delay_withdraw_sec(&users.bob, 3600, 1),
+        E002_NOT_ALLOWED
+    );
+
+    e.extend_operators(&e.owner, vec![&users.bob], 1).assert_success();
+
+    // success
+    assert_eq!(e.get_config().delay_withdraw_sec, 3600*24*7);
+    e.modify_delay_withdraw_sec(&users.bob, 3600, 1).assert_success();
+    assert_eq!(e.get_config().delay_withdraw_sec, 3600);
+}
+
+#[test]
 fn test_modify_daily_reward(){
     let e = init_env();
     let users = Users::init(&e);
@@ -404,26 +430,26 @@ fn test_return_seed_lostfound(){
         E100_ACC_NOT_REGISTERED
     );
 
-    e.mft_unregister(&token_id, &users.farmer1);
-    let outcome = e.unlock_and_withdraw_seed(&users.farmer1, &seed_id, 0, to_yocto("100"));
-    assert_eq!(false, outcome.unwrap_json::<bool>());
-    assert_err!(
-        outcome,
-        "ERR_RECEIVER_NOT_REGISTERED"
-    );
-    assert_eq!(e.list_lostfound().get(&seed_id).unwrap().0, to_yocto("100"));
+    // e.mft_unregister(&token_id, &users.farmer1);
+    // let outcome = e.unlock_and_unstake_seed(&users.farmer1, &seed_id, 0, to_yocto("100"));
+    // assert_eq!(false, outcome.unwrap_json::<bool>());
+    // assert_err!(
+    //     outcome,
+    //     "ERR_RECEIVER_NOT_REGISTERED"
+    // );
+    // assert_eq!(e.list_lostfound().get(&seed_id).unwrap().0, to_yocto("100"));
     
-    // 5 : ERR_RECEIVER_NOT_REGISTERED
-    assert_err!(
-        e.return_seed_lostfound(&e.owner, &users.farmer1, &seed_id, to_yocto("100"), 1),
-        "ERR_RECEIVER_NOT_REGISTERED"
-    );
+    // // 5 : ERR_RECEIVER_NOT_REGISTERED
+    // assert_err!(
+    //     e.return_seed_lostfound(&e.owner, &users.farmer1, &seed_id, to_yocto("100"), 1),
+    //     "ERR_RECEIVER_NOT_REGISTERED"
+    // );
     
-    // success
-    e.mft_storage_deposit(&token_id, &users.farmer1, );
-    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
-    e.return_seed_lostfound(&e.owner, &users.farmer1, &seed_id, to_yocto("100"), 1).assert_success();
-    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
+    // // success
+    // e.mft_storage_deposit(&token_id, &users.farmer1, );
+    // assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), 0);
+    // e.return_seed_lostfound(&e.owner, &users.farmer1, &seed_id, to_yocto("100"), 1).assert_success();
+    // assert_eq!(e.mft_balance_of(&users.farmer1, &token_id), to_yocto("100"));
 }
 
 #[test]
