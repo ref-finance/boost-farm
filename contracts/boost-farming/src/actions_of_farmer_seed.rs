@@ -87,29 +87,34 @@ impl Contract {
         self.internal_do_farmer_claim(&mut farmer, &mut seed);
 
         let mut farmer_seed = farmer.seeds.get(&seed_id).unwrap();
+        let is_empty_farmer_seed = farmer_seed.is_empty();
 
         let prev = farmer_seed.get_seed_power();
 
-        let decreased_seed_power = 
+        let unlock_decreased_seed_power = 
         if unlock_amount > 0 {
             farmer_seed.unlock_to_free(unlock_amount)
         } else {
             0
         };
-        if unstake_amount > 0 {
-            farmer_seed.withdraw_free(unstake_amount);
+        let unstake_decreased_seed_power = if unstake_amount > 0 {
             farmer.add_withdraw_seed(&seed_id, unstake_amount);
-        }
+            farmer_seed.withdraw_free(unstake_amount)
+        } else {
+            0
+        };
 
         seed.total_seed_amount -= unstake_amount;
         seed.total_seed_power = seed.total_seed_power - prev + farmer_seed.get_seed_power();
 
         if farmer_seed.is_empty() {
             farmer.seeds.remove(&seed_id);
-            if seed.farmer_count > 0 {
+            if seed.farmer_count > 0 && !is_empty_farmer_seed{
                 seed.farmer_count -= 1;
             }
         } else {
+            require!((farmer_seed.free_amount == 0 || farmer_seed.free_amount >= seed.min_deposit) && 
+                (farmer_seed.locked_amount == 0 || farmer_seed.locked_amount >= seed.min_deposit), E307_BELOW_MIN_DEPOSIT);
             farmer.seeds.insert(&seed_id, &farmer_seed);
         }
 
@@ -123,8 +128,17 @@ impl Contract {
                 farmer_id: &farmer_id,
                 seed_id: &seed_id,
                 unlock_amount: &U128(unlock_amount),
-                decreased_power: &U128(decreased_seed_power),
+                decreased_power: &U128(unlock_decreased_seed_power),
                 slashed_seed: &U128(0),
+            }
+            .emit();
+        }
+        if unstake_amount > 0 {
+            Event::SeedUnstake {
+                farmer_id: &farmer_id,
+                seed_id: &seed_id,
+                unstake_amount: &U128(unstake_amount),
+                decreased_power: &U128(unstake_decreased_seed_power),
             }
             .emit();
         }

@@ -59,6 +59,12 @@ pub enum Event<'a> {
         decreased_power: &'a U128,
         slashed_seed: &'a U128,
     },
+    SeedUnstake {
+        farmer_id: &'a AccountId,
+        seed_id: &'a String,
+        unstake_amount: &'a U128,
+        decreased_power: &'a U128,
+    },
     SeedWithdraw {
         farmer_id: &'a AccountId,
         seed_id: &'a String,

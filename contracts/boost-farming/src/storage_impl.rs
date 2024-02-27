@@ -49,8 +49,6 @@ impl StorageManagement for Contract {
     #[allow(unused_variables)]
     #[payable]
     fn storage_withdraw(&mut self, amount: Option<U128>) -> StorageBalance {
-        assert_one_yocto();
-        require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
         env::panic_str(E006_NOT_IMPLEMENTED);
     }
 
@@ -73,6 +71,10 @@ impl StorageManagement for Contract {
             require!(
                 farmer.seeds.is_empty(),
                 E104_STILL_HAS_SEED
+            );
+            require!(
+                farmer.withdraws.is_empty(),
+                E105_STILL_HAS_WITHDRAWS
             );
 
             self.data_mut().farmers.remove(&account_id);

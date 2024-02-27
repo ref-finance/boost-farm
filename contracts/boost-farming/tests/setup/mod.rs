@@ -57,8 +57,7 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
 }
 
 pub fn previous_boost_farm_wasm_bytes() -> &'static [u8] {
-    // &PREV_BOOST_FARMING_WASM_BYTES
-    &BOOST_FARMING_WASM_BYTES
+    &PREV_BOOST_FARMING_WASM_BYTES
 }
 
 pub fn boost_farm_wasm_bytes() -> &'static [u8] {
