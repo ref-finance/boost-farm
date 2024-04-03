@@ -112,11 +112,11 @@ impl Config {
     }
 
     /// return Vec<(booster, booster_decimal, log_base)> for the given seed
-    pub fn get_boosters_from_seed(&self, seed_id: &SeedId) -> Vec<(SeedId, u32, u32)> {
+    pub fn get_boosters_from_seed(&self, seed_id: &SeedId) -> Vec<(SeedId, u32, u32, u128)> {
         self.booster_seeds
             .iter()
             .filter(|(k, v)| k.clone() != seed_id && v.affected_seeds.contains_key(seed_id))
-            .map(|(k, v)| (k.clone(), v.booster_decimal, v.affected_seeds.get(seed_id).unwrap_or(&0_u32).clone()))
+            .map(|(k, v)| (k.clone(), v.booster_decimal, v.affected_seeds.get(seed_id).unwrap_or(&0_u32).clone(), v.boost_suppress_factor))
             .collect()
     }
 }
@@ -156,7 +156,8 @@ pub enum VersionedContractData {
     V0100(ContractDataV0100),
     V0101(ContractDataV0101),
     V0102(ContractDataV0102),
-    V0103(ContractData),
+    V0103(ContractDataV0103),
+    V0104(ContractData),
 }
 
 #[near_bindgen]
@@ -171,7 +172,7 @@ impl Contract {
     pub fn new(owner_id: AccountId, ref_exchange_id: AccountId) -> Self {
         require!(!env::state_exists(), E000_ALREADY_INIT);
         Self {
-            data: VersionedContractData::V0103(ContractData {
+            data: VersionedContractData::V0104(ContractData {
                 owner_id: owner_id.into(),
                 next_owner_id: None,
                 next_owner_accept_deadline: None,
@@ -198,14 +199,14 @@ impl Contract {
 
     fn data(&self) -> &ContractData {
         match &self.data {
-            VersionedContractData::V0103(data) => data,
+            VersionedContractData::V0104(data) => data,
             _ => unimplemented!(),
         }
     }
 
     fn data_mut(&mut self) -> &mut ContractData {
         match &mut self.data {
-            VersionedContractData::V0103(data) => data,
+            VersionedContractData::V0104(data) => data,
             _ => unimplemented!(),
         }
     }

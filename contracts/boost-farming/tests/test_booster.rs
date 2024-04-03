@@ -14,16 +14,16 @@ fn test_modify_booster(){
     let booster_id = tokens.love_ref.account_id.to_string();
     let mut affected_seeds = HashMap::new();
     affected_seeds.insert(seed_id.clone(), 100);
-    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone()};
+    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1};
 
     let mut affected_seeds_include_own = HashMap::new();
     affected_seeds_include_own.insert(seed_id.clone(), 100);
     affected_seeds_include_own.insert(booster_id.clone(), 100);
-    let booster_info_include_own = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_include_own.clone()};
+    let booster_info_include_own = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_include_own.clone(), boost_suppress_factor: 1};
 
     let mut affected_seeds_not_exist = HashMap::new();
     affected_seeds_not_exist.insert("seed".to_string(), 100);
-    let booster_info_not_exist = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_not_exist.clone()};
+    let booster_info_not_exist = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_not_exist.clone(), boost_suppress_factor: 1};
 
 
     let mut affected_seeds_exceed_seed = HashMap::new();
@@ -33,7 +33,7 @@ fn test_modify_booster(){
         e.create_farm(&e.owner, &temp_seed_id, &tokens.nref, to_sec(e.current_time()), to_yocto("10")).assert_success();
         affected_seeds_exceed_seed.insert(temp_seed_id, 100);
     }
-    let booster_info_exceed_seed = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_seed.clone()};
+    let booster_info_exceed_seed = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_seed.clone(), boost_suppress_factor: 1};
 
     let mut affected_seeds_exceed_farm = HashMap::new();
     for i in 0..MAX_NUM_SEEDS_PER_BOOSTER {
@@ -44,7 +44,7 @@ fn test_modify_booster(){
             affected_seeds_exceed_farm.insert(temp_seed_id.clone(), 100);
         }
     }
-    let booster_info_exceed_farm = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_farm.clone()};
+    let booster_info_exceed_farm = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_farm.clone(), boost_suppress_factor: 1};
 
     // error scene 
     // 1 : E002_NOT_ALLOWED

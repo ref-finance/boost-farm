@@ -477,7 +477,7 @@ fn test_mutli_seed_with_booster_and_normal(){
     let booster_id = tokens.love_ref.account_id.to_string();
     let mut affected_seeds = HashMap::new();
     affected_seeds.insert(seed_id_booster.clone(), 10);
-    let booster_info = BoosterInfo { booster_decimal: 24, affected_seeds: affected_seeds.clone()};
+    let booster_info = BoosterInfo { booster_decimal: 24, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1};
     e.create_seed(&e.owner, &booster_id, TOKEN_DECIMALS as u32, None, Some(0)).assert_success();
     assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
     e.modify_booster(&e.owner, &booster_id, &booster_info).assert_success();
@@ -1178,7 +1178,7 @@ fn test_booster_ratio(){
     let booster_id = tokens.love_ref.account_id.to_string();
     let mut affected_seeds = HashMap::new();
     affected_seeds.insert(seed_id_booster.clone(), 10);
-    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone()};
+    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1};
     e.create_seed(&e.owner, &booster_id, TOKEN_DECIMALS as u32, None, Some(0)).assert_success();
     assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 0);
     e.modify_booster(&e.owner, &booster_id, &booster_info).assert_success();
@@ -1281,4 +1281,84 @@ fn test_reward_after_start_at(){
     e.deposit_reward(&tokens.nref, &users.operator, to_yocto("100"), &farm_id).assert_success();
     assert_eq!(e.get_unclaimed_rewards(&users.farmer1, &seed_id, &tokens.nref), to_yocto("50"));
     assert_eq!(e.get_unclaimed_rewards(&users.farmer2, &seed_id, &tokens.nref), to_yocto("50"));
+}
+
+
+#[test]
+fn test_booster_update(){
+    let e = init_env();
+    let users = Users::init(&e);
+    let tokens = Tokens::init(&e);
+
+    let inner_id_booster = "0".to_string();
+    let token_id_booster = format!(":{}", inner_id_booster);
+    let seed_id_booster = e.mft_seed_id(&inner_id_booster);
+
+    println!("> create seed affected by booster seed at : {}", e.current_time());
+    e.create_seed(&e.owner, &seed_id_booster, TOKEN_DECIMALS as u32, None, None).assert_success();
+    assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
+
+    println!("booster> create booster seed at : {}", e.current_time());
+    let booster_id = tokens.love_ref.account_id.to_string();
+    let mut affected_seeds = HashMap::new();
+    affected_seeds.insert(seed_id_booster.clone(), 10);
+    let booster_info = BoosterInfo { booster_decimal: 24, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1 };
+    e.create_seed(&e.owner, &booster_id, TOKEN_DECIMALS as u32, None, Some(1)).assert_success();
+    assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 1);
+    e.modify_booster(&e.owner, &booster_id, &booster_info).assert_success();
+
+    println!("> farmer1 mint mft at : {}", e.current_time());
+    e.mft_mint(&inner_id_booster, &users.farmer1, to_yocto("100"));
+    assert_eq!(e.mft_balance_of(&users.farmer1, &token_id_booster), to_yocto("100"));
+
+    println!("> farmer1 register farming at : {}", e.current_time());
+    e.storage_deposit_self_to_farming(&users.farmer1).assert_success();
+
+    println!("> farming register mft at : {}", e.current_time());
+    e.mft_storage_deposit(&token_id_booster, &e.farming_contract.user_account);
+
+    println!("booster> farmer1 mft_stake_free_seed at : {}", e.current_time());
+    e.mft_stake_free_seed(&users.farmer1, &token_id_booster, to_yocto("100")).assert_success();
+    assert_user_seed_info(e.get_farmer_seed(&users.farmer1, &seed_id_booster), to_yocto("100"), 0, 0, 0, 0);
+    assert_seed(e.get_seed(&seed_id_booster), &seed_id_booster, TOKEN_DECIMALS as u32, 0, to_yocto("100"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
+
+    println!("booster> farmer1 stake booster token at : {}", e.current_time());
+    e.modify_locking_policy(&e.owner, DEFAULT_MAX_LOCKING_DURATION_SEC, 1000000, 1).assert_success();
+    e.ft_mint(&tokens.love_ref, &users.farmer1, to_yocto("100"));
+    e.ft_stake_lock_seed(&users.farmer1, &tokens.love_ref, to_yocto("10"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(2.9999999999999996));
+    assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, to_yocto("10"), to_yocto("1000"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 1);
+
+    let booster_info = BoosterInfo { booster_decimal: 24, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 10 };
+    e.modify_booster(&e.owner, &booster_id, &booster_info).assert_success();
+
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(2.9999999999999996));
+    e.claim_reward_by_seed(&users.farmer1, &seed_id_booster).assert_success();
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(2.0));
+    assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, to_yocto("10"), to_yocto("1000"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 1);
+
+    
+    e.modify_locking_policy(&e.owner, DEFAULT_MAX_LOCKING_DURATION_SEC, 100000, 1).assert_success();
+    assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, to_yocto("10"), to_yocto("1000"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 1);
+    e.claim_reward_by_seed(&users.farmer1, &seed_id_booster).assert_success();
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(1.0));
+    assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, to_yocto("10"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 1);
+
+
+    let booster_info = BoosterInfo { booster_decimal: 24, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1 };
+    e.modify_booster(&e.owner, &booster_id, &booster_info).assert_success();
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(1.0));
+    e.claim_reward_by_seed(&users.farmer1, &seed_id_booster).assert_success();
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(2.0));
+    assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, to_yocto("10"), to_yocto("100"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 1);
+    
+    let start_at = e.current_time();
+    e.modify_locking_policy(&e.owner, 1000, 1000000, 1).assert_success();
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &booster_id).get("unlock_timestamp").unwrap(), &json!((start_at + to_nano(DEFAULT_MAX_LOCKING_DURATION_SEC)).to_string()));
+    e.claim_reward_by_seed(&users.farmer1, &seed_id_booster).assert_success();
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &booster_id).get("unlock_timestamp").unwrap(), &json!((start_at + to_nano(1000)).to_string()));
+    assert_eq!(e.get_farmer_seed(&users.farmer1, &seed_id_booster).get("boost_ratios").unwrap()[booster_id.clone()], json!(2.9999999999999996));
+    assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, to_yocto("10"), to_yocto("1000"), MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, 1);
+    println!("{:?}", e.get_farmer_seed(&users.farmer1, &booster_id));
+    println!("{:?}", e.get_farmer_seed(&users.farmer1, &seed_id_booster));
 }

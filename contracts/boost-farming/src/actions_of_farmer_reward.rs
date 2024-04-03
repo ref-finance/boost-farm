@@ -9,11 +9,7 @@ impl Contract {
         let farmer_id = env::predecessor_account_id();
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
-        let mut seed = self.internal_unwrap_seed(&seed_id);
-
-        self.internal_do_farmer_claim(&mut farmer, &mut seed);
-
-        self.internal_set_seed(&seed_id, seed);
+        self.internal_do_farmer_claim(&mut farmer, &seed_id);
         self.internal_set_farmer(&farmer_id, farmer);
     }
 

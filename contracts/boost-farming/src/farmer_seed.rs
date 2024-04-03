@@ -185,6 +185,35 @@ impl FarmerSeed {
 
         (prev - self.get_seed_power(), seed_slashed)
     }
+
+    pub fn sync_booster_policy(&mut self, config: &Config) -> (bool, Balance) {
+        let prev = self.get_seed_power();
+        let timestamp = env::block_timestamp();
+        if self.unlock_timestamp > timestamp {
+            let maximum_locking_duration_sec = config.maximum_locking_duration_sec;
+            let remain_duration_sec = nano_to_sec(self.unlock_timestamp - timestamp);
+
+            let max_x_locked_amount = compute_x_amount(config, self.locked_amount, maximum_locking_duration_sec);
+            let recalc_x_locked_amount = compute_x_amount(config, self.locked_amount, std::cmp::min(self.duration_sec, maximum_locking_duration_sec));
+            self.x_locked_amount = std::cmp::min(
+                max_x_locked_amount,
+                std::cmp::max(self.x_locked_amount, recalc_x_locked_amount)
+            );
+
+            if remain_duration_sec > maximum_locking_duration_sec {
+                self.unlock_timestamp = timestamp + to_nano(maximum_locking_duration_sec);
+                self.duration_sec = maximum_locking_duration_sec;
+            }
+        } else {
+            self.x_locked_amount = 0;
+        }
+        let current = self.get_seed_power();
+        if current > prev {
+            (true, current - prev)
+        } else {
+            (false, prev - current)
+        }
+    }
 }
 
 fn compute_x_amount(config: &Config, amount: u128, duration_sec: u32) -> u128 {

@@ -13,14 +13,13 @@ impl Contract {
         let farmer_id = env::predecessor_account_id();
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
+        self.internal_do_farmer_claim(&mut farmer, &seed_id);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
         require!(seed.min_locking_duration_sec > 0, E300_FORBID_LOCKING);
         require!(duration_sec >= seed.min_locking_duration_sec, E201_INVALID_DURATION);
         let config = self.internal_config();
         require!(duration_sec <= config.maximum_locking_duration_sec, E201_INVALID_DURATION);
-
-        self.internal_do_farmer_claim(&mut farmer, &mut seed);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);
         let amount = if let Some(request) = amount {
@@ -66,9 +65,8 @@ impl Contract {
         let farmer_id = env::predecessor_account_id();
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
+        self.internal_do_farmer_claim(&mut farmer, &seed_id);
         let mut seed = self.internal_unwrap_seed(&seed_id);
-
-        self.internal_do_farmer_claim(&mut farmer, &mut seed);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);
 
@@ -128,9 +126,8 @@ impl Contract {
         let farmer_id = env::predecessor_account_id();
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
+        self.internal_do_farmer_claim(&mut farmer, &seed_id);
         let mut seed = self.internal_unwrap_seed(&seed_id);
-
-        self.internal_do_farmer_claim(&mut farmer, &mut seed);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);
 

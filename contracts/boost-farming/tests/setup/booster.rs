@@ -10,6 +10,7 @@ impl Env {
         let booster_info = boost_farming::BoosterInfo{
             booster_decimal: booster_info.booster_decimal,
             affected_seeds: booster_info.affected_seeds.clone(),
+            boost_suppress_factor: booster_info.boost_suppress_factor,
         };
         operator
             .function_call(
