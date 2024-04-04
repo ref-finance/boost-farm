@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "boost-farming"
-version = "0.5.0"
+version = "0.4.1"
 dependencies = [
  "mock-ft",
  "mock-mft",

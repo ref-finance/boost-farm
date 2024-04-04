@@ -4,7 +4,7 @@ use crate::*;
 pub struct ContractDataV0100 {
     pub owner_id: AccountId,
     pub operators: UnorderedSet<AccountId>,
-    pub config: LazyOption<ConfigV0>,
+    pub config: LazyOption<Config>,
     pub seeds: UnorderedMap<SeedId, VSeed>,
     pub farmers: LookupMap<AccountId, VFarmer>,
     pub outdated_farms: UnorderedMap<FarmId, VSeedFarm>,
@@ -32,14 +32,13 @@ impl From<ContractDataV0100> for ContractData {
             farmer_count,
             farm_count,
         } = a;
-        let config_v0 = config.get().unwrap();
         Self {
             owner_id: owner_id.clone(),
             next_owner_id: None,
             next_owner_accept_deadline: None,
             ref_exchange_id: owner_id,
             operators,
-            config: LazyOption::new(StorageKeys::Config, Some(&config_v0.into())),
+            config,
             seeds,
             farmers,
             outdated_farms,
@@ -86,7 +85,7 @@ pub struct ContractDataV0101 {
     pub owner_id: AccountId,
     pub state: RunningState,
     pub operators: UnorderedSet<AccountId>,
-    pub config: LazyOption<ConfigV0>,
+    pub config: LazyOption<Config>,
     pub seeds: UnorderedMap<SeedId, VSeed>,
     pub farmers: LookupMap<AccountId, VFarmer>,
     pub outdated_farms: UnorderedMap<FarmId, VSeedFarm>,
@@ -115,7 +114,6 @@ impl From<ContractDataV0101> for ContractData {
             farmer_count,
             farm_count,
         } = a;
-        let config_v0 = config.get().unwrap();
         Self {
             owner_id: owner_id.clone(),
             next_owner_id: None,
@@ -123,7 +121,7 @@ impl From<ContractDataV0101> for ContractData {
             ref_exchange_id: owner_id,
             state,
             operators,
-            config: LazyOption::new(StorageKeys::Config, Some(&config_v0.into())),
+            config,
             seeds,
             farmers,
             outdated_farms,
@@ -282,7 +280,7 @@ pub struct ContractDataV0102 {
     pub next_owner_accept_deadline: Option<u64>,
     pub state: RunningState,
     pub operators: UnorderedSet<AccountId>,
-    pub config: LazyOption<ConfigV0>,
+    pub config: LazyOption<Config>,
     pub seeds: UnorderedMap<SeedId, VSeed>,
     pub farmers: LookupMap<AccountId, VFarmer>,
     pub outdated_farms: UnorderedMap<FarmId, VSeedFarm>,
@@ -313,7 +311,6 @@ impl From<ContractDataV0102> for ContractData {
             farmer_count,
             farm_count,
         } = a;
-        let config_v0 = config.get().unwrap();
         Self {
             owner_id: owner_id.clone(),
             next_owner_id,
@@ -321,7 +318,7 @@ impl From<ContractDataV0102> for ContractData {
             ref_exchange_id: owner_id,
             state,
             operators,
-            config: LazyOption::new(StorageKeys::Config, Some(&config_v0.into())),
+            config,
             seeds,
             farmers,
             outdated_farms,
@@ -402,133 +399,6 @@ impl From<FarmerV1> for Farmer {
             vseeds: UnorderedMap::new(StorageKeys::VFarmerSeed {
                 account_id: farmer_id.clone(),
             }),
-        }
-    }
-}
-
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct ContractDataV0103 {
-    pub owner_id: AccountId,
-    pub next_owner_id: Option<AccountId>,
-    pub next_owner_accept_deadline: Option<u64>,
-    pub ref_exchange_id: AccountId,
-    pub state: RunningState,
-    pub operators: UnorderedSet<AccountId>,
-    pub config: LazyOption<ConfigV0>,
-    pub seeds: UnorderedMap<SeedId, VSeed>,
-    pub farmers: LookupMap<AccountId, VFarmer>,
-    pub outdated_farms: UnorderedMap<FarmId, VSeedFarm>,
-    // all slashed seed would recorded in here
-    pub seeds_slashed: UnorderedMap<SeedId, Balance>,
-    // if unstake seed encounter error, the seed would go to here
-    pub seeds_lostfound: UnorderedMap<SeedId, Balance>,
-
-    // for statistic
-    farmer_count: u64,
-    farm_count: u64,
-}
-
-impl From<ContractDataV0103> for ContractData {
-    fn from(a: ContractDataV0103) -> Self {
-        let ContractDataV0103 {
-            owner_id,
-            next_owner_id,
-            next_owner_accept_deadline,
-            ref_exchange_id,
-            state,
-            operators,
-            config,
-            seeds,
-            farmers,
-            outdated_farms,
-            seeds_slashed,
-            seeds_lostfound,
-            farmer_count,
-            farm_count,
-        } = a;
-        let config_v0 = config.get().unwrap();
-        Self {
-            owner_id,
-            next_owner_id,
-            next_owner_accept_deadline,
-            ref_exchange_id,
-            state,
-            operators,
-            config: LazyOption::new(StorageKeys::Config, Some(&config_v0.into())),
-            seeds,
-            farmers,
-            outdated_farms,
-            seeds_slashed,
-            seeds_lostfound,
-            farmer_count,
-            farm_count,
-        }
-    }
-}
-
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct BoosterInfoV0 {
-    pub booster_decimal: u32,
-    /// <affected_seed_id, log_base>
-    pub affected_seeds: HashMap<SeedId, u32>,
-}
-
-impl From<BoosterInfoV0> for BoosterInfo {
-    fn from(a: BoosterInfoV0) -> Self {
-        let BoosterInfoV0 {
-            booster_decimal,
-            affected_seeds, 
-        } = a;
-        
-        Self {
-            booster_decimal,
-            affected_seeds,
-            boost_suppress_factor: 1
-        }
-    }
-}
-
-#[derive(BorshSerialize, BorshDeserialize, Serialize)]
-#[serde(crate = "near_sdk::serde")]
-#[cfg_attr(feature = "test", derive(Deserialize, Clone))]
-pub struct ConfigV0 {
-    pub seed_slash_rate: u32,
-
-    /// Key is boosterID, support multiple booster
-    pub booster_seeds: HashMap<SeedId, BoosterInfoV0>,
-
-    pub max_num_farms_per_booster: u32,
-
-    pub max_num_farms_per_seed: u32,
-
-    /// The maximum duration to stake booster token in seconds.
-    pub maximum_locking_duration_sec: DurationSec,
-
-    /// The rate of x for the amount of seed given for the maximum locking duration.
-    /// Assuming the 100% multiplier at the 0 duration. Should be no less than 100%.
-    /// E.g. 20000 means 200% multiplier (or 2X).
-    pub max_locking_multiplier: u32,
-}
-
-impl From<ConfigV0> for Config {
-    fn from(a: ConfigV0) -> Self {
-        let ConfigV0 {
-            seed_slash_rate,
-            booster_seeds, 
-            max_num_farms_per_booster,
-            max_num_farms_per_seed,
-            maximum_locking_duration_sec,
-            max_locking_multiplier,
-        } = a;
-        
-        Self {
-            seed_slash_rate,
-            booster_seeds: booster_seeds.into_iter().map(|(k, v)| (k, v.into())).collect(), 
-            max_num_farms_per_booster,
-            max_num_farms_per_seed,
-            maximum_locking_duration_sec,
-            max_locking_multiplier,
         }
     }
 }

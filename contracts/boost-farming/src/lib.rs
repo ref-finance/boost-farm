@@ -156,8 +156,7 @@ pub enum VersionedContractData {
     V0100(ContractDataV0100),
     V0101(ContractDataV0101),
     V0102(ContractDataV0102),
-    V0103(ContractDataV0103),
-    V0104(ContractData),
+    V0103(ContractData),
 }
 
 #[near_bindgen]
@@ -172,7 +171,7 @@ impl Contract {
     pub fn new(owner_id: AccountId, ref_exchange_id: AccountId) -> Self {
         require!(!env::state_exists(), E000_ALREADY_INIT);
         Self {
-            data: VersionedContractData::V0104(ContractData {
+            data: VersionedContractData::V0103(ContractData {
                 owner_id: owner_id.into(),
                 next_owner_id: None,
                 next_owner_accept_deadline: None,
@@ -199,14 +198,14 @@ impl Contract {
 
     fn data(&self) -> &ContractData {
         match &self.data {
-            VersionedContractData::V0104(data) => data,
+            VersionedContractData::V0103(data) => data,
             _ => unimplemented!(),
         }
     }
 
     fn data_mut(&mut self) -> &mut ContractData {
         match &mut self.data {
-            VersionedContractData::V0104(data) => data,
+            VersionedContractData::V0103(data) => data,
             _ => unimplemented!(),
         }
     }
