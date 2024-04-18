@@ -14,6 +14,7 @@ impl Contract {
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
         require!(seed.min_locking_duration_sec > 0, E300_FORBID_LOCKING);
@@ -66,6 +67,7 @@ impl Contract {
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);
@@ -127,6 +129,7 @@ impl Contract {
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);

@@ -186,8 +186,7 @@ impl FarmerSeed {
         (prev - self.get_seed_power(), seed_slashed)
     }
 
-    pub fn sync_booster_policy(&mut self, config: &Config) -> (bool, Balance) {
-        let prev = self.get_seed_power();
+    pub fn sync_booster_policy(&mut self, config: &Config) {
         let timestamp = env::block_timestamp();
         if self.unlock_timestamp > timestamp {
             let maximum_locking_duration_sec = config.maximum_locking_duration_sec;
@@ -206,12 +205,6 @@ impl FarmerSeed {
             }
         } else {
             self.x_locked_amount = 0;
-        }
-        let current = self.get_seed_power();
-        if current > prev {
-            (true, current - prev)
-        } else {
-            (false, prev - current)
         }
     }
 }

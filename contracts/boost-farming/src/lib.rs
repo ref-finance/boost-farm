@@ -111,7 +111,7 @@ impl Config {
         self.booster_seeds.get(booster_id)
     }
 
-    /// return Vec<(booster, booster_decimal, log_base)> for the given seed
+    /// return Vec<(booster, booster_decimal, log_base, boost_suppress_factor)> for the given seed
     pub fn get_boosters_from_seed(&self, seed_id: &SeedId) -> Vec<(SeedId, u32, u32, u128)> {
         self.booster_seeds
             .iter()

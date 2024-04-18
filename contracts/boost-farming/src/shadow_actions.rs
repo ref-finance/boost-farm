@@ -28,6 +28,7 @@ impl Contract {
         let mut farmer = self.internal_unwrap_farmer(&account_id);
         let seed_id = self.shadow_id_to_seed_id(&shadow_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
         require!(amount.0 >= seed.min_deposit, E307_BELOW_MIN_DEPOSIT);
 
@@ -64,6 +65,7 @@ impl Contract {
         let mut farmer = self.internal_unwrap_farmer(&account_id);
         let seed_id = self.shadow_id_to_seed_id(&shadow_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);

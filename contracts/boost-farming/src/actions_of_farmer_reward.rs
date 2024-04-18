@@ -10,6 +10,7 @@ impl Contract {
 
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         self.internal_set_farmer(&farmer_id, farmer);
     }
 

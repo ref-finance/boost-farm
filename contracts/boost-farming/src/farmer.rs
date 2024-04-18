@@ -165,14 +165,13 @@ impl Contract {
     }
 
     pub fn internal_do_farmer_claim(&mut self, farmer: &mut Farmer, seed_id: &SeedId) {
-        let (mut farmer_seed, rewards, claimed) = self.internal_calc_farmer_claim(&farmer, &self.internal_unwrap_seed(&seed_id));
+        let mut seed = self.internal_unwrap_seed(&seed_id);
+        let (mut farmer_seed, rewards, claimed) = self.internal_calc_farmer_claim(&farmer, &seed);
         farmer.add_rewards(&rewards);
         
         // sync booster info
         let prev = farmer_seed.get_seed_power();
-        self.sync_booster_policy(farmer);
-        farmer_seed.boost_ratios = self.gen_booster_ratios(&seed_id, farmer);
-        let mut seed = self.internal_unwrap_seed(&seed_id);
+        farmer_seed.boost_ratios = self.gen_booster_ratios(&seed.seed_id, farmer);
         seed.total_seed_power = seed.total_seed_power + farmer_seed.get_seed_power() - prev;
 
         farmer.set_seed(&seed.seed_id, farmer_seed);

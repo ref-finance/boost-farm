@@ -172,6 +172,8 @@ pub struct BoosterInfo {
     pub booster_decimal: u32,
     /// <affected_seed_id, log_base>
     pub affected_seeds: HashMap<SeedId, u32>,
+    #[serde(with = "u128_dec_format")]
+    pub boost_suppress_factor: u128,
 }
 
 pub struct Config {
@@ -191,7 +193,7 @@ pub struct FarmerSeed {
 
 For each affected seed, we have:  
 $$
-booster\_ratio = log_{base}(\frac{booster\_power}{booster\_unit})
+booster\_ratio = log_{base}(\frac{booster\_power}{booster\_unit * boost\_suppress\_factor})
 $$
 $$
 extra\_seed\_power = original\_seed\_power * booster\_ratio
@@ -201,7 +203,7 @@ $base$ determine the relative power of booster to the affected seed;
 
 Example:  
 Say booster is a seed which decimal is 18.  
-If $base = 10$,  
+If $base = 10, boost\_suppress\_factor = 1$,  
 Then $100*10^{18}$ amount of booster_locking_power would got double extra seed power, make the farmer's total seed power goes to 3X.  
 
 ## Interface
@@ -353,6 +355,8 @@ pub struct BoosterInfo {
     pub booster_decimal: u32,
     /// <affected_seed, log_base>
     pub affected_seeds: HashMap<SeedId, u32>,
+    #[serde(with = "u128_dec_format")]
+    pub boost_suppress_factor: u128,
 }
 pub fn modify_booster(&mut self, booster_id: SeedId, booster_info: BoosterInfo);
 ```
@@ -378,7 +382,8 @@ near view $FARM get_config
   booster_seeds: {
     'mft.ref-dev.testnet@1': {
       booster_decimal: 24,
-      affected_seeds: { 'mft.ref-dev.testnet@0': 10 }
+      affected_seeds: { 'mft.ref-dev.testnet@0': 10 },
+      boost_suppress_factor: 1
     }
   },
   max_num_farms_per_booster: 64,

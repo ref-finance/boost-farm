@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::*;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -99,14 +101,28 @@ impl Contract {
         for booster_seed_id in config.booster_seeds.keys() {
             if let Some(mut farmer_seed) = farmer.get_seed(booster_seed_id) {
                 let mut booster_seed = self.internal_unwrap_seed(booster_seed_id);
-                let (is_increased, seed_power) = farmer_seed.sync_booster_policy(&config);
-                if is_increased {
-                    booster_seed.total_seed_power += seed_power;
-                } else {
-                    booster_seed.total_seed_power -= seed_power;
-                }
+
+                let prev = farmer_seed.get_seed_power();
+                farmer_seed.sync_booster_policy(&config);
+                let next = farmer_seed.get_seed_power();
                 farmer.set_seed(booster_seed_id, farmer_seed);
+
+                let need_update = match prev.cmp(&next) {
+                    Ordering::Greater => {
+                        booster_seed.total_seed_power -= prev - next;
+                        true
+                    }
+                    Ordering::Less => {
+                        booster_seed.total_seed_power += next - prev;
+                        true
+                    }
+                    Ordering::Equal => { false }
+                };
                 self.internal_set_seed(booster_seed_id, booster_seed);
+                
+                if need_update {
+                    self.update_impacted_seeds(farmer, &booster_seed_id);
+                }
             }
         }
     }

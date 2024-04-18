@@ -100,6 +100,7 @@ impl Contract {
     pub fn stake_free_seed(&mut self, farmer_id: &AccountId, seed_id: &SeedId, amount: u128) {
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
         require!(amount >= seed.min_deposit, E307_BELOW_MIN_DEPOSIT);
 
@@ -134,6 +135,7 @@ impl Contract {
     ) {
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
         self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
         require!(amount >= seed.min_deposit, E307_BELOW_MIN_DEPOSIT);
 
