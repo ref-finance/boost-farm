@@ -22,6 +22,7 @@ pub const E203_EXCEED_FARM_NUM_IN_BOOST: &str = "E203: exceed max farm num in on
 pub const E204_EXCEED_SEED_NUM_IN_BOOSTER: &str = "E204: exceed max seed num in one booster";
 pub const E205_INVALID_SLASH_RATE: &str = "E205: invalid slash rate";
 pub const E206_INVALID_BOOST_SUPPRESS_FACTOR: &str = "E206: The boost_suppress_factor must be greater than 0";
+pub const E207_FORBID_BOOST_BOOSTER_SEED: &str = "E207: boost booster seed is forbidden";
 
 pub const E300_FORBID_LOCKING: &str = "E300: locking on this seed is forbidden";
 pub const E301_SEED_NOT_EXIST: &str = "E301: seed not exist";

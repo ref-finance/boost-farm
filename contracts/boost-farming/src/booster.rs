@@ -31,6 +31,10 @@ impl Contract {
         booster_info.assert_valid(&booster_id);
 
         let mut config =  self.data().config.get().unwrap();
+        require!(config.booster_seeds.keys().all(|booster_seed_id| !booster_info.affected_seeds.contains_key(booster_seed_id)), E207_FORBID_BOOST_BOOSTER_SEED);
+        for (_, exist_booster_info) in &config.booster_seeds {
+            require!(!exist_booster_info.affected_seeds.contains_key(&booster_id), E207_FORBID_BOOST_BOOSTER_SEED);
+        }
         require!(self.affected_farm_count(&booster_info) <= config.max_num_farms_per_booster, E203_EXCEED_FARM_NUM_IN_BOOST);
         
         config.booster_seeds.insert(booster_id.clone(), booster_info);
@@ -99,7 +103,10 @@ impl Contract {
     pub fn sync_booster_policy(&mut self, farmer: &mut Farmer) {
         let config = self.internal_config();
         for booster_seed_id in config.booster_seeds.keys() {
-            if let Some(mut farmer_seed) = farmer.get_seed(booster_seed_id) {
+            if farmer.get_seed(booster_seed_id).is_some() {
+                self.internal_do_farmer_claim(farmer, booster_seed_id);
+                
+                let mut farmer_seed = farmer.get_seed_unwrap(booster_seed_id);
                 let mut booster_seed = self.internal_unwrap_seed(booster_seed_id);
 
                 let prev = farmer_seed.get_seed_power();
