@@ -1,5 +1,11 @@
 # Release Notes
 
+Version 0.4.1
+```
+p2vkS59rBER5W8o3yXKXgNa6DNWsKEAz9HGPd6tRMSv
+```
+1. update booster policy.
+
 Version 0.4.0
 ```
 6VWxaLQhmQYp41n5uiaU9i29WjKT5roafwKZntUC7dwv
