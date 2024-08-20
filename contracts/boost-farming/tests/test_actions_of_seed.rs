@@ -83,7 +83,7 @@ fn test_create_farm(){
         }
     }
     let booster_id = tokens.love_ref.account_id.to_string();
-    let booster_info = BoosterInfo { booster_decimal: 100, affected_seeds: affected_seeds.clone()};
+    let booster_info = BoosterInfo { booster_decimal: 100, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1 };
     e.create_seed(&e.owner, &booster_id, TOKEN_DECIMALS as u32, None, None).assert_success();
     assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 

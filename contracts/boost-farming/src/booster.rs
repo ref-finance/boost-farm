@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::*;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
@@ -6,12 +8,15 @@ pub struct BoosterInfo {
     pub booster_decimal: u32,
     /// <affected_seed_id, log_base>
     pub affected_seeds: HashMap<SeedId, u32>,
+    #[serde(with = "u128_dec_format")]
+    pub boost_suppress_factor: u128,
 }
 
 impl BoosterInfo {
     pub fn assert_valid(&self, booster_id: &SeedId) {
         require!(self.affected_seeds.contains_key(booster_id) == false, E202_FORBID_SELF_BOOST);
         require!(self.affected_seeds.len() <= MAX_NUM_SEEDS_PER_BOOSTER, E204_EXCEED_SEED_NUM_IN_BOOSTER);
+        require!(self.boost_suppress_factor > 0, E206_INVALID_BOOST_SUPPRESS_FACTOR);
     }
 }
 
@@ -26,6 +31,10 @@ impl Contract {
         booster_info.assert_valid(&booster_id);
 
         let mut config =  self.data().config.get().unwrap();
+        require!(config.booster_seeds.keys().all(|booster_seed_id| !booster_info.affected_seeds.contains_key(booster_seed_id)), E207_FORBID_BOOST_BOOSTER_SEED);
+        for (_, exist_booster_info) in &config.booster_seeds {
+            require!(!exist_booster_info.affected_seeds.contains_key(&booster_id), E207_FORBID_BOOST_BOOSTER_SEED);
+        }
         require!(self.affected_farm_count(&booster_info) <= config.max_num_farms_per_booster, E203_EXCEED_FARM_NUM_IN_BOOST);
         
         config.booster_seeds.insert(booster_id.clone(), booster_info);
@@ -59,14 +68,14 @@ impl Contract {
     pub fn gen_booster_ratios(&self, seed_id: &SeedId, farmer: &Farmer) -> HashMap<SeedId, f64> {
         let mut ratios = HashMap::new();
         let log_bases = self.internal_config().get_boosters_from_seed(seed_id);
-        for (booster, booster_decimal, log_base) in &log_bases {
+        for (booster, booster_decimal, log_base, boost_suppress_factor) in &log_bases {
             let booster_balance = farmer
                 .get_seed(booster)
                 .map(|v| v.get_basic_seed_power())
                 .unwrap_or(0_u128);
             if booster_balance > 0 && log_base > &0 {
                 let booster_base = 10u128.pow(*booster_decimal);
-                let booster_amount = booster_balance as f64 / booster_base as f64;
+                let booster_amount = booster_balance as f64 / booster_base as f64 / *boost_suppress_factor as f64;
                 let ratio = if booster_amount > 1f64 {
                     booster_amount.log(*log_base as f64)
                 } else {
@@ -85,9 +94,41 @@ impl Contract {
                 // here we got each affected seed_id, then if the farmer has those seeds, should be updated on by one
                 if farmer.get_seed(seed_id).is_some() {
                     // first claim that farmer's current reward and update boost_ratios for the seed
-                    let mut seed = self.internal_unwrap_seed(seed_id);
-                    self.internal_do_farmer_claim(farmer, &mut seed);
-                    self.internal_set_seed(seed_id, seed);
+                    self.internal_do_farmer_claim(farmer, &seed_id);
+                }
+            }
+        }
+    }
+
+    pub fn sync_booster_policy(&mut self, farmer: &mut Farmer) {
+        let config = self.internal_config();
+        for booster_seed_id in config.booster_seeds.keys() {
+            if farmer.get_seed(booster_seed_id).is_some() {
+                self.internal_do_farmer_claim(farmer, booster_seed_id);
+                
+                let mut farmer_seed = farmer.get_seed_unwrap(booster_seed_id);
+                let mut booster_seed = self.internal_unwrap_seed(booster_seed_id);
+
+                let prev = farmer_seed.get_seed_power();
+                farmer_seed.sync_booster_policy(&config);
+                let next = farmer_seed.get_seed_power();
+                farmer.set_seed(booster_seed_id, farmer_seed);
+
+                let need_update = match prev.cmp(&next) {
+                    Ordering::Greater => {
+                        booster_seed.total_seed_power -= prev - next;
+                        true
+                    }
+                    Ordering::Less => {
+                        booster_seed.total_seed_power += next - prev;
+                        true
+                    }
+                    Ordering::Equal => { false }
+                };
+                self.internal_set_seed(booster_seed_id, booster_seed);
+                
+                if need_update {
+                    self.update_impacted_seeds(farmer, &booster_seed_id);
                 }
             }
         }

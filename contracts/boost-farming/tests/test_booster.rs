@@ -14,16 +14,16 @@ fn test_modify_booster(){
     let booster_id = tokens.love_ref.account_id.to_string();
     let mut affected_seeds = HashMap::new();
     affected_seeds.insert(seed_id.clone(), 100);
-    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone()};
+    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1};
 
     let mut affected_seeds_include_own = HashMap::new();
     affected_seeds_include_own.insert(seed_id.clone(), 100);
     affected_seeds_include_own.insert(booster_id.clone(), 100);
-    let booster_info_include_own = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_include_own.clone()};
+    let booster_info_include_own = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_include_own.clone(), boost_suppress_factor: 1};
 
     let mut affected_seeds_not_exist = HashMap::new();
     affected_seeds_not_exist.insert("seed".to_string(), 100);
-    let booster_info_not_exist = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_not_exist.clone()};
+    let booster_info_not_exist = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_not_exist.clone(), boost_suppress_factor: 1};
 
 
     let mut affected_seeds_exceed_seed = HashMap::new();
@@ -33,7 +33,7 @@ fn test_modify_booster(){
         e.create_farm(&e.owner, &temp_seed_id, &tokens.nref, to_sec(e.current_time()), to_yocto("10")).assert_success();
         affected_seeds_exceed_seed.insert(temp_seed_id, 100);
     }
-    let booster_info_exceed_seed = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_seed.clone()};
+    let booster_info_exceed_seed = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_seed.clone(), boost_suppress_factor: 1};
 
     let mut affected_seeds_exceed_farm = HashMap::new();
     for i in 0..MAX_NUM_SEEDS_PER_BOOSTER {
@@ -44,7 +44,7 @@ fn test_modify_booster(){
             affected_seeds_exceed_farm.insert(temp_seed_id.clone(), 100);
         }
     }
-    let booster_info_exceed_farm = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_farm.clone()};
+    let booster_info_exceed_farm = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds_exceed_farm.clone(), boost_suppress_factor: 1};
 
     // error scene 
     // 1 : E002_NOT_ALLOWED
@@ -63,6 +63,8 @@ fn test_modify_booster(){
     assert_seed(e.get_seed(&seed_id), &seed_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
     e.create_seed(&e.owner, &booster_id, TOKEN_DECIMALS as u32, None, None).assert_success();
     assert_seed(e.get_seed(&booster_id), &booster_id, TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
+    e.create_seed(&e.owner, &tokens.love_sushi.account_id.to_string(), TOKEN_DECIMALS as u32, None, None).assert_success();
+    assert_seed(e.get_seed(&tokens.love_sushi.account_id.to_string()), &tokens.love_sushi.account_id.to_string(), TOKEN_DECIMALS as u32, 0, 0, 0, MIN_SEED_DEPOSIT, DEFAULT_SEED_SLASH_RATE, DEFAULT_SEED_MIN_LOCKING_DURATION_SEC);
 
     // 3 : E202_FORBID_SELF_BOOST
     assert_err!(
@@ -94,4 +96,27 @@ fn test_modify_booster(){
     assert_eq!(e.get_config().booster_seeds.len(), 1);
     assert_eq!(e.get_config().booster_seeds.get(&booster_id).unwrap().booster_decimal, 18);
     assert_eq!(e.get_config().booster_seeds.get(&booster_id).unwrap().affected_seeds, affected_seeds);
+
+    let booster_id = tokens.love_sushi.account_id.to_string();
+    let mut affected_seeds = HashMap::new();
+    affected_seeds.insert(seed_id.clone(), 100);
+    affected_seeds.insert(tokens.love_ref.account_id.to_string().clone(), 100);
+    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1};
+
+    // 7 : E207_FORBID_BOOST_BOOSTER_SEED
+    assert_err!(
+        e.modify_booster(&e.owner, &booster_id, &booster_info),
+        E207_FORBID_BOOST_BOOSTER_SEED
+    );
+    
+    let booster_id = seed_id.to_string();
+    let mut affected_seeds = HashMap::new();
+    affected_seeds.insert(format!("{}{}", seed_id, 0).clone(), 100);
+    let booster_info = BoosterInfo { booster_decimal: 18, affected_seeds: affected_seeds.clone(), boost_suppress_factor: 1};
+
+    // 8 : E207_FORBID_BOOST_BOOSTER_SEED
+    assert_err!(
+        e.modify_booster(&e.owner, &booster_id, &booster_info),
+        E207_FORBID_BOOST_BOOSTER_SEED
+    );
 }

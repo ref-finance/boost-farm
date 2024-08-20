@@ -6,7 +6,7 @@ fn test_update(){
     let e = Env::init_with_contract(previous_boost_farm_wasm_bytes());
     let users = Users::init(&e);
 
-    assert_eq!(e.get_metadata020().version, "0.3.2".to_string());
+    assert_eq!(e.get_metadata020().version, "0.4.0".to_string());
 
     let inner_id = "0".to_string();
     let token_id = format!(":{}", inner_id);
@@ -29,9 +29,18 @@ fn test_update(){
     );
 
     e.upgrade_contract(&e.owner, boost_farm_wasm_bytes()).assert_success();
-    assert_eq!(e.get_metadata().version, "0.4.0".to_string());
+    assert_eq!(e.get_metadata().version, "0.4.1".to_string());
 
     println!("{:?}", e.get_farmer_seed(&users.farmer1, &seed_id));
     e.mft_stake_free_seed(&users.farmer2, &token_id, to_yocto("10")).assert_success();
     println!("{:?}", e.get_farmer_seed(&users.farmer2, &seed_id));
+
+    println!("{:?}", near_sdk::serde_json::to_string(&e.get_config()).unwrap());
+    let mut affected_seeds = std::collections::HashMap::new();
+    affected_seeds.insert(seed_id.clone(), 10);
+    let booster_info = BoosterInfo { booster_decimal: 24, affected_seeds, boost_suppress_factor: 1 };
+    let booster_id = "booster_id".to_string();
+    e.create_seed(&e.owner, &booster_id, TOKEN_DECIMALS as u32, None, Some(1)).assert_success();
+    e.modify_booster(&e.owner, &booster_id, &booster_info).assert_success();
+    println!("{:?}", near_sdk::serde_json::to_string(&e.get_config()).unwrap());
 }

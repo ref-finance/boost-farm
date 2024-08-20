@@ -99,10 +99,10 @@ impl MFTTokenReceiver for Contract {
 impl Contract {
     pub fn stake_free_seed(&mut self, farmer_id: &AccountId, seed_id: &SeedId, amount: u128) {
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
+        self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
         require!(amount >= seed.min_deposit, E307_BELOW_MIN_DEPOSIT);
-
-        self.internal_do_farmer_claim(&mut farmer, &mut seed);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);
         let increased_seed_power = farmer_seed.add_free(amount);
@@ -134,6 +134,8 @@ impl Contract {
         duration_sec: u32,
     ) {
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
+        self.internal_do_farmer_claim(&mut farmer, &seed_id);
+        self.sync_booster_policy(&mut farmer);
         let mut seed = self.internal_unwrap_seed(&seed_id);
         require!(amount >= seed.min_deposit, E307_BELOW_MIN_DEPOSIT);
 
@@ -141,8 +143,6 @@ impl Contract {
         require!(duration_sec >= seed.min_locking_duration_sec, E201_INVALID_DURATION);
         let config = self.internal_config();
         require!(duration_sec <= config.maximum_locking_duration_sec, E201_INVALID_DURATION);
-
-        self.internal_do_farmer_claim(&mut farmer, &mut seed);
 
         let mut farmer_seed = farmer.get_seed_unwrap(&seed_id);
         let increased_seed_power = farmer_seed.add_lock(amount, duration_sec, &config);

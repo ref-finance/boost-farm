@@ -164,7 +164,8 @@ impl Contract {
         (farmer_seed, rewards, claimed)
     }
 
-    pub fn internal_do_farmer_claim(&self, farmer: &mut Farmer, seed: &mut Seed) {
+    pub fn internal_do_farmer_claim(&mut self, farmer: &mut Farmer, seed_id: &SeedId) {
+        let mut seed = self.internal_unwrap_seed(&seed_id);
         let (mut farmer_seed, rewards, claimed) = self.internal_calc_farmer_claim(&farmer, &seed);
         farmer.add_rewards(&rewards);
         
@@ -175,7 +176,7 @@ impl Contract {
 
         farmer.set_seed(&seed.seed_id, farmer_seed);
         seed.update_claimed(&claimed);
-
+        self.internal_set_seed(&seed_id, seed);
     }
 
     pub fn internal_get_farmer(&self, farmer_id: &AccountId) -> Option<Farmer> {

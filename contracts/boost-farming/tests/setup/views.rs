@@ -1,4 +1,5 @@
 use crate::*;
+use boost_farming::u128_dec_format;
 use near_sdk::serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use near_sdk::serde_json::Value;
@@ -45,6 +46,8 @@ pub struct StorageReport {
 pub struct BoosterInfo {
     pub booster_decimal: u32,
     pub affected_seeds: HashMap<SeedId, u32>,
+    #[serde(with = "u128_dec_format")]
+    pub boost_suppress_factor: u128,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

@@ -111,12 +111,12 @@ impl Config {
         self.booster_seeds.get(booster_id)
     }
 
-    /// return Vec<(booster, booster_decimal, log_base)> for the given seed
-    pub fn get_boosters_from_seed(&self, seed_id: &SeedId) -> Vec<(SeedId, u32, u32)> {
+    /// return Vec<(booster, booster_decimal, log_base, boost_suppress_factor)> for the given seed
+    pub fn get_boosters_from_seed(&self, seed_id: &SeedId) -> Vec<(SeedId, u32, u32, u128)> {
         self.booster_seeds
             .iter()
             .filter(|(k, v)| k.clone() != seed_id && v.affected_seeds.contains_key(seed_id))
-            .map(|(k, v)| (k.clone(), v.booster_decimal, v.affected_seeds.get(seed_id).unwrap_or(&0_u32).clone()))
+            .map(|(k, v)| (k.clone(), v.booster_decimal, v.affected_seeds.get(seed_id).unwrap_or(&0_u32).clone(), v.boost_suppress_factor))
             .collect()
     }
 }
