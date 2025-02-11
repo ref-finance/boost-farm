@@ -2,7 +2,7 @@ use near_sdk::{
     AccountId, log,
     serde::{Serialize},
     serde_json::{json},
-    json_types::U128,
+    json_types::{U64, U128},
 };
 
 const EVENT_STANDARD: &str = "ref-farming";
@@ -117,6 +117,26 @@ pub enum Event<'a> {
         farmer_id: &'a AccountId,
         seed_id: &'a String,
         withdraw_amount: &'a U128,
+    },
+    GrantNextOwner {
+        next_owner_id: &'a AccountId,
+        next_owner_accept_deadline: U64,
+    },
+    AcceptNextOwner {
+        accept_owner_id: &'a AccountId,
+    },
+    ConfirmNextOwner {
+        old_owner_id: &'a AccountId,
+        new_owner_id: &'a AccountId,
+    },
+    CancelNextOwner {
+        cancel_owner_id: &'a AccountId,
+    },
+    ExtendOperators {
+        operators: &'a Vec<AccountId>
+    },
+    RemoveOperators {
+        operators: &'a Vec<AccountId>
     },
 }
 

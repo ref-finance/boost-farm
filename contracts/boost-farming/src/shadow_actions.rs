@@ -23,7 +23,7 @@ impl Contract {
     pub fn on_cast_shadow(&mut self, account_id: AccountId, shadow_id: String, amount: U128, msg: String) {
         require!(self.data().ref_exchange_id == env::predecessor_account_id(), E002_NOT_ALLOWED);
         require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
-        require!(msg.is_empty());
+        require!(msg.is_empty(), E501_UNEXPECTED_MSG);
 
         let mut farmer = self.internal_unwrap_farmer(&account_id);
         let seed_id = self.shadow_id_to_seed_id(&shadow_id);
@@ -57,7 +57,7 @@ impl Contract {
     pub fn on_remove_shadow(&mut self, account_id: AccountId, shadow_id: String, amount: U128, msg: String) {
         require!(self.data().ref_exchange_id == env::predecessor_account_id(), E002_NOT_ALLOWED);
         require!(self.data().state == RunningState::Running, E004_CONTRACT_PAUSED);
-        require!(msg.is_empty());
+        require!(msg.is_empty(), E501_UNEXPECTED_MSG);
 
         let withdraw_amount: Balance = amount.into();
         require!(withdraw_amount > 0, "amount must greater than 0!");

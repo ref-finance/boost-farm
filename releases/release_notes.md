@@ -1,5 +1,11 @@
 # Release Notes
 
+Version 0.4.2
+```
+6i1kpaDvaAtas7FrJ4kvtyZYYZXjLVTqGuxLnFrQpSeV
+```
+1. amendments according to audition recommendations.
+
 Version 0.4.1
 ```
 p2vkS59rBER5W8o3yXKXgNa6DNWsKEAz9HGPd6tRMSv

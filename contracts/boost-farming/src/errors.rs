@@ -8,6 +8,7 @@ pub const E005_NOT_ALLOWED_ON_CUR_STATE: &str = "E005: not allowed on current st
 pub const E006_NOT_IMPLEMENTED: &str = "E006: not implemented";
 pub const E007_INVALID_OPERATOR: &str = "E007: invalid operator";
 pub const E008_ALREADY_ACCEPTED: &str = "E008: already accepted";
+pub const E009_EXISTING_OPERATOR: &str = "E009: operator already exists";
 
 pub const E100_ACC_NOT_REGISTERED: &str = "E100: account not registered";
 pub const E101_INSUFFICIENT_BALANCE: &str = "E101: insufficient balance";
@@ -43,6 +44,7 @@ pub const E406_INVALID_FARM_ID: &str = "E406: invalid farm id";
 // pub const E402_FARM_ALREADY_EXIST: &str = "E402: farm already exist";
 
 pub const E500_INVALID_MSG: &str = "E500: invalid msg";
+pub const E501_UNEXPECTED_MSG: &str = "E501: unexpected msg";
 
 pub const E600_MFT_INVALID_TOKEN_ID: &str = "E600: MFT token_id is invalid";
 pub const E601_MFT_CAN_NOT_BE_REWARD: &str = "E601: MFT can NOT be reward token";

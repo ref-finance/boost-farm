@@ -49,8 +49,14 @@ impl Contract {
         self.check_next_owner_deadline();
 
         require!(self.data().next_owner_id.is_none(), E002_NOT_ALLOWED);
-        self.data_mut().next_owner_id = Some(next_owner_id);
-        self.data_mut().next_owner_accept_deadline = Some(env::block_timestamp_ms() + AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT);
+        self.data_mut().next_owner_id = Some(next_owner_id.clone());
+        let next_owner_accept_deadline = env::block_timestamp_ms() + AVAILABLE_MS_FOR_NEXT_OWNER_ACCEPT;
+        self.data_mut().next_owner_accept_deadline = Some(next_owner_accept_deadline);
+        Event::GrantNextOwner {
+            next_owner_id: &next_owner_id,
+            next_owner_accept_deadline: next_owner_accept_deadline.into(), 
+        }
+        .emit();
     }
 
     #[payable]
@@ -63,6 +69,9 @@ impl Contract {
         require!(self.data().next_owner_accept_deadline.is_some(), E008_ALREADY_ACCEPTED);
 
         self.data_mut().next_owner_accept_deadline = None;
+        Event::AcceptNextOwner {
+            accept_owner_id: &env::predecessor_account_id()
+        }.emit();
     }
 
     #[payable]
@@ -75,6 +84,10 @@ impl Contract {
         require!(self.data().next_owner_id.is_some(), E002_NOT_ALLOWED);
 
         if let Some(next_owner_id) = self.data().next_owner_id.clone() {
+            Event::ConfirmNextOwner {
+                old_owner_id: &self.data().owner_id,
+                new_owner_id: &next_owner_id,
+            }.emit();
             self.data_mut().owner_id = next_owner_id.clone();
         }
 
@@ -88,6 +101,10 @@ impl Contract {
         self.check_next_owner_deadline();
 
         require!(self.data().next_owner_id.is_some(), E002_NOT_ALLOWED);
+
+        Event::CancelNextOwner {
+            cancel_owner_id: self.data().next_owner_id.as_ref().unwrap(),
+        }.emit();
 
         self.data_mut().next_owner_id = None;
         self.data_mut().next_owner_accept_deadline = None;
@@ -124,9 +141,13 @@ impl Contract {
     pub fn extend_operators(&mut self, operators: Vec<AccountId>) {
         assert_one_yocto();
         self.assert_owner();
-        for operator in operators {
-            self.data_mut().operators.insert(&operator);
+        for operator in &operators {
+            let is_success = self.data_mut().operators.insert(operator);
+            require!(is_success, E009_EXISTING_OPERATOR);
         }
+        Event::ExtendOperators {
+            operators: &operators,
+        }.emit();
     }
 
     /// Remove operators. Only can be called by owner.
@@ -134,10 +155,13 @@ impl Contract {
     pub fn remove_operators(&mut self, operators: Vec<AccountId>) {
         assert_one_yocto();
         self.assert_owner();
-        for operator in operators {
-            let is_success = self.data_mut().operators.remove(&operator);
+        for operator in &operators {
+            let is_success = self.data_mut().operators.remove(operator);
             require!(is_success, E007_INVALID_OPERATOR);
         }
+        Event::RemoveOperators {
+            operators: &operators,
+        }.emit();
     }
 
     /// Should only be called by this contract on migration.
