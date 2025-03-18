@@ -1,5 +1,11 @@
 # Release Notes
 
+Version 0.4.1
+```
+A2V7JUXK5u4J7T454Bxo4cs5W5PGFJSmyp4pbzEhJ6C2
+```
+1. fix withdraw_reward.
+
 Version 0.4.0
 ```
 6VWxaLQhmQYp41n5uiaU9i29WjKT5roafwKZntUC7dwv

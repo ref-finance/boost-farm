@@ -6,7 +6,7 @@ fn test_update(){
     let e = Env::init_with_contract(previous_boost_farm_wasm_bytes());
     let users = Users::init(&e);
 
-    assert_eq!(e.get_metadata020().version, "0.3.2".to_string());
+    assert_eq!(e.get_metadata020().version, "0.4.0".to_string());
 
     let inner_id = "0".to_string();
     let token_id = format!(":{}", inner_id);
@@ -29,7 +29,7 @@ fn test_update(){
     );
 
     e.upgrade_contract(&e.owner, boost_farm_wasm_bytes()).assert_success();
-    assert_eq!(e.get_metadata().version, "0.4.0".to_string());
+    assert_eq!(e.get_metadata().version, "0.4.1".to_string());
 
     println!("{:?}", e.get_farmer_seed(&users.farmer1, &seed_id));
     e.mft_stake_free_seed(&users.farmer2, &token_id, to_yocto("10")).assert_success();
