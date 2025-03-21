@@ -14,6 +14,7 @@ pub const E101_INSUFFICIENT_BALANCE: &str = "E101: insufficient balance";
 pub const E102_INSUFFICIENT_STORAGE: &str = "E102: insufficient storage";
 pub const E103_STILL_HAS_REWARD: &str = "E103: still has reward";
 pub const E104_STILL_HAS_SEED: &str = "E104: still has seed";
+pub const E105_STILL_HAS_WITHDRAWS: &str = "E105: still has withdraws";
 
 pub const E200_INVALID_RATIO: &str = "E200: invalid ratio";
 pub const E201_INVALID_DURATION: &str = "E201: invalid duration";
