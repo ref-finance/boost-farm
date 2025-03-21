@@ -102,6 +102,32 @@ impl Farmer {
             }
         }
     }
+
+    pub fn add_withdraw_seed(&mut self, seed_id: &SeedId, amount: Balance) {
+        if let Some(mut withdraw_seed) = self.withdraws.get_mut(seed_id) {
+            withdraw_seed.amount += amount;
+            withdraw_seed.apply_timestamp = env::block_timestamp();
+        } else {
+            self.withdraws.insert(seed_id.clone(), FarmerWithdraw {
+                amount,
+                apply_timestamp: env::block_timestamp(),
+            });
+        }
+    }
+
+    pub fn sub_withdraw_seed(&mut self, seed_id: &SeedId, amount: Balance, lock_duration: DurationSec) {
+        if let Some(prev) = self.withdraws.remove(seed_id) {
+            require!(amount <= prev.amount, E101_INSUFFICIENT_BALANCE);
+            require!(env::block_timestamp() >= prev.apply_timestamp + to_nano(lock_duration), E305_STILL_IN_LOCK);
+            let remain = prev.amount - amount;
+            if remain > 0 {
+                self.withdraws.insert(seed_id.clone(), FarmerWithdraw {
+                    amount: remain,
+                    apply_timestamp: prev.apply_timestamp,
+                });
+            }
+        }
+    }
 }
 
 impl Contract {

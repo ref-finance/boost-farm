@@ -43,12 +43,12 @@ clean:
 	rm -rf res/
 
 define docker_build
-	docker build -t my-meme-farm-builder .
+	docker build -t meme-farm-builder .
 	docker run \
 		--mount type=bind,source=${PWD},target=/host \
 		--cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
 		-w /host \
 		-e RUSTFLAGS=$(RFLAGS) \
-		-i -t my-meme-farm-builder \
+		-i -t meme-farm-builder \
 		/bin/bash $(1)
 endef

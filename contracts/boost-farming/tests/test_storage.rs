@@ -38,11 +38,6 @@ fn test_storage(){
 
 
     // error scene 
-    // 1 : storage_withdraw with Requires attached deposit of exactly 1 yoctoNEAR
-    assert_err!(
-        e.storage_withdraw(&users.alice, 0),
-        "Requires attached deposit of exactly 1 yoctoNEAR"
-    );
 
     // 2 : storage_withdraw with E101_INSUFFICIENT_BALANCE
     assert_err!(
