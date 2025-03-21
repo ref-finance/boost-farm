@@ -1,5 +1,11 @@
 # Release Notes
 
+Version 0.1.3
+```
+FFzcktx7hv952exPxj9ndKxYZunaRGWKw1fwBRbprshE
+```
+1. apply audit_recommendation
+
 Version 0.1.2
 ```
 3LTLfZ5Yk6qJNwxtK7SHTuGbVXxKXR6wFGPMvXX4BRGs
