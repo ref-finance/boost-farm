@@ -25,7 +25,7 @@ impl Contract {
         let farmer_id = env::predecessor_account_id();
         let mut farmer = self.internal_unwrap_farmer(&farmer_id);
 
-        let total = farmer.rewards.get(&token_id).unwrap_or(&0_u128);
+        let total = farmer.rewards.get(&token_id).expect(format!("Farmer does not have {} reward.", token_id).as_str());
         let amount: u128 = amount.map(|v| v.into()).unwrap_or(total.clone());
 
         if amount > 0 {

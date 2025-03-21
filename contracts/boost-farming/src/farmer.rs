@@ -72,6 +72,8 @@ impl Farmer {
             if remain > 0 {
                 self.rewards.insert(token_id.clone(), remain);
             }
+        } else {
+            env::panic_str(format!("Farmer does not have {} reward.", token_id).as_str());
         }
     }
 

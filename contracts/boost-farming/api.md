@@ -44,6 +44,8 @@ pub struct Seed {
     pub slash_rate: u32,
     /// if min_lock_duration == 0, means forbid locking
     pub min_locking_duration_sec: DurationSec,
+    /// the active farmers count 
+    pub farmer_count: u32,
 }
 ```
 **Compute APY**:  
@@ -238,23 +240,39 @@ near call $MFT mft_transfer_call '{"receiver_id": "'$FARM'", "token_id": ":0", "
 near call $MFT mft_transfer_call '{"receiver_id": "'$FARM'", "token_id": ":0", "amount": "1'$ZERO24'", "msg": "{\"Lock\":{\"duration_sec\":5184000}}"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
 ```
 
-**Unlock and Withdraw**  
-are unified into one interface `unlock_and_withdraw_seed`:
+**Unlock and Unstake**  
+are unified into one interface `unlock_and_unstake_seed`:
 ```rust
-pub fn unlock_and_withdraw_seed(
+pub fn unlock_and_unstake_seed(
     &mut self,
     seed_id: SeedId,
     unlock_amount: U128,
-    withdraw_amount: U128,
+    unstake_amount: U128,
 ) 
 ```
 First, check if `unlock_amount` > 0, do unlock and unlocked seed amount goes to Free,  
-Then check if `withdraw_amount` > 0, do withdraw seed from Free.  
+Then check if `unstake_amount` > 0, do unstake seed from Free.  
 
 Eg:
 ```bash
-near call $FARM unlock_and_withdraw_seed '{"seed_id": "'$MFT'@0", "unlock_amount": "0", "withdraw_amount": "1'$ZERO24'"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
+near call $FARM unlock_and_unstake_seed '{"seed_id": "'$MFT'@0", "unlock_amount": "0", "unstake_amount": "1'$ZERO24'"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
 ```
+
+**Withdraw seed**  
+Withdraw those unstaked seed:
+```rust
+pub fn withdraw_seed(
+    &mut self,
+    seed_id: SeedId,
+    amount: Option<U128>,
+) 
+```
+
+Eg:
+```bash
+near call $FARM withdraw_seed '{"seed_id": "'$MFT'@0"}' --account_id=u1.testnet --gas=150$TGAS
+```
+
 **Free to Lock**  
 Let farmer convert his Free seed to Locking without transfer from outside:
 ```rust
