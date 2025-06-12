@@ -1,5 +1,12 @@
 # Release Notes
 
+Version 0.4.2
+```
+CZtkwr4Bx2iV3pKofXbUAjnLrB4BXWugpzD7k13TX8YM
+```
+1. amendments according to audition recommendations.
+2. add get_seed_farms_by_seed_ids.
+
 Version 0.4.1
 ```
 p2vkS59rBER5W8o3yXKXgNa6DNWsKEAz9HGPd6tRMSv

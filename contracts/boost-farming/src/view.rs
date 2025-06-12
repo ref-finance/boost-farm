@@ -152,6 +152,10 @@ impl Contract {
             .collect()
     }
 
+    pub fn get_seed_farms_by_seed_ids(&self, seed_ids: Vec<SeedId>) -> Vec<Vec<SeedFarm>> {
+        seed_ids.into_iter().map(|seed_id| self.list_seed_farms(seed_id)).collect()
+    }
+
     pub fn get_farm(&self, farm_id: FarmId) -> Option<SeedFarm> {
         let (seed_id, _) = parse_farm_id(&farm_id);
         let seed = self.internal_unwrap_seed(&seed_id);
