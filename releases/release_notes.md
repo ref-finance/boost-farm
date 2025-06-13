@@ -2,10 +2,11 @@
 
 Version 0.4.2
 ```
-DFAs4Wd4GQRBngBgxDKZhMDWF85ptdiiGMv3CwG1pfez
+95dxVsjqEvS9Dz7WR1kSwaUSw9XKAU66Bc4CM6XaMc6W
 ```
 1. amendments according to audition recommendations.
 2. add get_seed_farms_by_seed_ids.
+3. add get_unclaimed_rewards_batch.
 
 Version 0.4.1
 ```

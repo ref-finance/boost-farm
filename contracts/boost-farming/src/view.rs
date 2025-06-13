@@ -186,6 +186,22 @@ impl Contract {
             .collect()
     }
 
+    pub fn get_unclaimed_rewards_batch(
+        &self,
+        farmer_id: AccountId,
+        seed_ids: Vec<SeedId>,
+    ) -> Vec<HashMap<AccountId, U128>> {
+        let farmer = self.internal_unwrap_farmer(&farmer_id);
+        seed_ids.iter().map(|seed_id|{
+            let seed = self.internal_unwrap_seed(seed_id);
+            let (_, rewards, _) = self.internal_calc_farmer_claim(&farmer, &seed);
+            rewards
+                .into_iter()
+                .map(|(key, val)| (key, val.into()))
+                .collect()
+        }).collect()
+    }
+
     pub fn list_farmer_seeds(
         &self,
         farmer_id: AccountId,
