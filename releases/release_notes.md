@@ -2,16 +2,18 @@
 
 Version 0.4.2
 ```
-CZtkwr4Bx2iV3pKofXbUAjnLrB4BXWugpzD7k13TX8YM
+95dxVsjqEvS9Dz7WR1kSwaUSw9XKAU66Bc4CM6XaMc6W
 ```
 1. amendments according to audition recommendations.
 2. add get_seed_farms_by_seed_ids.
+3. add get_unclaimed_rewards_batch.
 
 Version 0.4.1
 ```
-p2vkS59rBER5W8o3yXKXgNa6DNWsKEAz9HGPd6tRMSv
+A2V7JUXK5u4J7T454Bxo4cs5W5PGFJSmyp4pbzEhJ6C2
 ```
 1. update booster policy.
+2. fix withdraw_reward.
 
 Version 0.4.0
 ```
